@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-theme-bg: var(--bg);
+  --color-theme-text: var(--text);
+  --color-theme-text-muted: var(--text-muted);
+  --color-theme-accent: var(--accent);
+  --color-theme-card: var(--card);
+  --color-theme-border: var(--border);
+  --color-theme-nav: var(--nav);
+  --color-theme-overlay: var(--overlay);
+  
+  --shadow-theme-card: var(--card-shadow);
+  --shadow-theme-card-hover: var(--card-shadow-hover);
+}
+
+:root {
+  --bg: #FDFBF7;
+  --text: #1D3557;
+  --text-muted: color-mix(in srgb, #1D3557 60%, transparent);
+  --accent: #C8102E;
+  --card: #FFFFFF;
+  --border: color-mix(in srgb, #1D3557 8%, transparent);
+  --nav: color-mix(in srgb, #FDFBF7 85%, transparent);
+  --overlay: color-mix(in srgb, #1D3557 40%, transparent);
+  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.theme-sophisticated {
+  --bg: #050203;
+  --text: #f4e6e8;
+  --text-muted: color-mix(in srgb, #f4e6e8 70%, transparent);
+  --accent: #ff2a5f;
+  --card: rgba(70, 10, 25, 0.4); /* Neon burgundy background */
+  --border: rgba(255, 42, 95, 0.3);
+  --nav: rgba(5, 2, 3, 0.85);
+  --overlay: rgba(5, 2, 3, 0.8);
+  --card-shadow: 0 4px 20px rgba(255, 42, 95, 0.15), inset 0 0 15px rgba(255, 42, 95, 0.1);
+  --card-shadow-hover: 0 8px 30px rgba(255, 42, 95, 0.4), inset 0 0 30px rgba(255, 42, 95, 0.25);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+  body {
+    overscroll-behavior-y: none;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.7s ease, color 0.7s ease;
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+  
+  .safe-pt {
+    padding-top: max(env(safe-area-inset-top), 3rem);
+  }
+  
+  .safe-pb {
+    padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);
+  }
+}
