@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search } from 'lucide-react';
+import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search, MessageSquare, Info, Moon, Sun, Calendar, Users, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const formatCurrency = (value: number) => {
@@ -38,9 +38,38 @@ const bebidas = [
   {
     subcategoria: "Refrigerantes",
     itens: [
-      { nome: "Coca-Cola", preco: 7.00, desc: "Lata 350ml", imagem: "https://picsum.photos/seed/soda1/400/400", tags: ["sem álcool", "gaseificado"] },
-      { nome: "Guaraná Antarctica", preco: 7.00, desc: "Lata 350ml", imagem: "https://picsum.photos/seed/soda2/400/400", tags: ["sem álcool", "gaseificado"] },
-      { nome: "Soda Limonada", preco: 7.00, desc: "Lata 350ml", imagem: "https://picsum.photos/seed/soda3/400/400", tags: ["sem álcool", "gaseificado", "com limão"] }
+      { 
+        nome: "Refrigerante Lata", 
+        preco: 7.00, 
+        desc: "Lata 350ml. Escolha o sabor.", 
+        imagem: "https://picsum.photos/seed/soda1/400/400", 
+        tags: ["sem álcool", "gaseificado"],
+        variacoes: [
+          { nome: "Coca-Cola", imagem: "https://picsum.photos/seed/coke/400/400" },
+          { nome: "Coca-Cola Zero Açúcar", imagem: "https://picsum.photos/seed/cokezero/400/400" },
+          { nome: "Pepsi", imagem: "https://picsum.photos/seed/pepsi/400/400" },
+          { nome: "Soda Limão", imagem: "https://picsum.photos/seed/soda/400/400" },
+          { nome: "Fanta Laranja", imagem: "https://picsum.photos/seed/fanta/400/400" },
+          { nome: "Sukita Uva", imagem: "https://picsum.photos/seed/sukita/400/400" },
+          { nome: "Guaraná", imagem: "https://picsum.photos/seed/guarana/400/400" },
+          { nome: "Guaraná Zero", imagem: "https://picsum.photos/seed/guaranazero/400/400" },
+          { nome: "Água Tônica", imagem: "https://picsum.photos/seed/tonica/400/400" },
+          { nome: "Água Tônica Zero", imagem: "https://picsum.photos/seed/tonicazero/400/400" }
+        ]
+      },
+      { 
+        nome: "Refrigerante 1L", 
+        preco: 12.00, 
+        desc: "Garrafa 1L. Escolha o sabor.", 
+        imagem: "https://picsum.photos/seed/soda2/400/400", 
+        tags: ["sem álcool", "gaseificado"],
+        variacoes: [
+          { nome: "Água da Serra Laranjinha", imagem: "https://picsum.photos/seed/laranjinha/400/400" },
+          { nome: "Água da Serra Framboesa", imagem: "https://picsum.photos/seed/framboesa/400/400" },
+          { nome: "Água da Serra Limão", imagem: "https://picsum.photos/seed/limao/400/400" },
+          { nome: "Água da Serra Guaraná", imagem: "https://picsum.photos/seed/guarana1l/400/400" }
+        ]
+      }
     ]
   },
   {
@@ -54,8 +83,12 @@ const bebidas = [
   {
     subcategoria: "Vinhos",
     itens: [
-      { nome: "Vinho Tinto Seco", preco: 85.00, desc: "Garrafa", imagem: "https://picsum.photos/seed/redwine/400/400", tags: ["com álcool", "vinho"] },
-      { nome: "Vinho Branco Suave", preco: 75.00, desc: "Garrafa", imagem: "https://picsum.photos/seed/whitewine/400/400", tags: ["com álcool", "vinho"] }
+      { nome: "Cabernet Sauvignon Reserva", preco: 120.00, desc: "Vinho tinto encorpado com notas de frutas vermelhas e especiarias. Chile.", imagem: "https://picsum.photos/seed/winecabernet/400/400", tags: ["com álcool", "vinho", "tinto"] },
+      { nome: "Malbec Argentino", preco: 145.00, desc: "Aromas intensos de ameixa e baunilha, taninos macios. Mendoza, Argentina.", popular: true, imagem: "https://picsum.photos/seed/winemalbec/400/400", tags: ["com álcool", "vinho", "tinto"] },
+      { nome: "Chardonnay Classic", preco: 95.00, desc: "Vinho branco fresco com toques cítricos e final amanteigado.", imagem: "https://picsum.photos/seed/winechardonnay/400/400", tags: ["com álcool", "vinho", "branco"] },
+      { nome: "Pinot Noir Suave", preco: 110.00, desc: "Leve e elegante, com notas de cereja e morango. Ideal para frutos do mar.", imagem: "https://picsum.photos/seed/winepinot/400/400", tags: ["com álcool", "vinho", "tinto"] },
+      { nome: "Sauvignon Blanc", preco: 85.00, desc: "Branco refrescante, com aromas herbáceos e acidez vibrante.", imagem: "https://picsum.photos/seed/winesauvignon/400/400", tags: ["com álcool", "vinho", "branco"] },
+      { nome: "Espumante Brut", preco: 130.00, desc: "Perlage fina e persistente, notas de maçã verde e pão tostado.", imagem: "https://picsum.photos/seed/wineespumante/400/400", tags: ["com álcool", "vinho", "espumante"] }
     ]
   },
   {
@@ -110,19 +143,334 @@ type CartItem = {
   nome: string;
   preco: number;
   quantidade: number;
+  imagem?: string;
 };
 
 type MainCategory = 'comidas' | 'bebidas';
 
+type Review = {
+  id: string;
+  author: string;
+  rating: number;
+  comment: string;
+  date: string;
+};
+
+const ProductModal = ({ 
+  product, 
+  isOpen, 
+  onClose, 
+  reviews, 
+  onAddReview, 
+  onAddToCart 
+}: { 
+  product: any, 
+  isOpen: boolean, 
+  onClose: () => void, 
+  reviews: Review[], 
+  onAddReview: (review: Omit<Review, 'id' | 'date'>) => void,
+  onAddToCart: (variacao?: string) => void 
+}) => {
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState('');
+  const [newAuthor, setNewAuthor] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedVariacao, setSelectedVariacao] = useState('');
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (product && product.variacoes && product.variacoes.length > 0) {
+      setSelectedVariacao(product.variacoes[0].nome);
+    } else {
+      setSelectedVariacao('');
+    }
+  }, [product]);
+
+  if (!isOpen || !product) return null;
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newRating === 0) {
+      alert('Por favor, selecione uma nota.');
+      return;
+    }
+    if (!newAuthor.trim()) {
+      alert('Por favor, informe seu nome.');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    // Simulate network request
+    setTimeout(() => {
+      onAddReview({
+        author: newAuthor.trim(),
+        rating: newRating,
+        comment: newComment.trim()
+      });
+      setNewRating(0);
+      setNewComment('');
+      setNewAuthor('');
+      setIsSubmitting(false);
+    }, 500);
+  };
+
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
+    : 0;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-theme-overlay/80 backdrop-blur-sm"
+          />
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="relative w-full max-w-2xl max-h-[90vh] bg-theme-bg rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+          >
+            {/* Header / Image Area */}
+            <div className="relative h-48 sm:h-64 shrink-0 bg-theme-card">
+              {product.imagem ? (
+                <img 
+                  src={`${product.imagem}.webp`} 
+                  alt={product.nome} 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-theme-text-muted opacity-30">
+                  <ImageIcon size={64} strokeWidth={1.5} />
+                </div>
+              )}
+              
+              <button 
+                onClick={onClose}
+                className="absolute top-4 right-4 w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors z-10"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">{product.nome}</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-theme-accent font-bold font-serif text-xl">{formatCurrency(product.preco)}</span>
+                  {reviews.length > 0 && (
+                    <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full">
+                      <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                      <span className="text-white text-sm font-medium">{averageRating.toFixed(1)}</span>
+                      <span className="text-white/70 text-xs">({reviews.length})</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {product.desc && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-bold text-theme-text uppercase tracking-wider mb-2">Descrição</h3>
+                  <p className="text-theme-text-muted leading-relaxed">{product.desc}</p>
+                </div>
+              )}
+
+              {product.ingredientes && product.ingredientes.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-bold text-theme-text uppercase tracking-wider mb-3">Ingredientes</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {product.ingredientes.map((ing: string, idx: number) => (
+                      <span key={idx} className="px-3 py-1 bg-theme-card border border-theme-border rounded-full text-xs text-theme-text-muted">
+                        {ing}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {product.variacoes && product.variacoes.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-bold text-theme-text uppercase tracking-wider mb-4">Escolha a Opção</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {product.variacoes.map((v: any, idx: number) => (
+                      <ProductCard 
+                        key={v.nome}
+                        index={idx}
+                        item={{
+                          ...v,
+                          preco: v.preco || product.preco,
+                          imagem: v.imagem || product.imagem,
+                          desc: v.desc || product.desc,
+                        }}
+                        icon={Plus}
+                        onAdd={(item) => {
+                          onAddToCart(v.nome);
+                        }}
+                        onOpenDetails={() => {}}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="w-full h-[1px] bg-theme-border mb-8"></div>
+
+              {/* Reviews Section */}
+              <div>
+                <h3 className="text-lg font-bold text-theme-text mb-6 flex items-center gap-2">
+                  <MessageSquare size={20} className="text-theme-accent" />
+                  Avaliações dos Clientes
+                </h3>
+
+                {/* Review Form */}
+                <form onSubmit={handleSubmitReview} className="bg-theme-card border border-theme-border rounded-2xl p-5 mb-8">
+                  <h4 className="text-sm font-bold text-theme-text mb-4">Deixe sua avaliação</h4>
+                  
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-theme-text-muted mb-2">Sua Nota</label>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNewRating(star)}
+                          className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                        >
+                          <Star 
+                            size={24} 
+                            className={`${star <= newRating ? 'fill-yellow-400 text-yellow-400' : 'text-theme-border'} transition-colors`} 
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label htmlFor="author" className="block text-xs font-medium text-theme-text-muted mb-2">Seu Nome</label>
+                    <input
+                      id="author"
+                      type="text"
+                      value={newAuthor}
+                      onChange={(e) => setNewAuthor(e.target.value)}
+                      placeholder="Como quer ser chamado?"
+                      className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-2.5 text-sm text-theme-text focus:outline-none focus:border-theme-accent transition-colors"
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label htmlFor="comment" className="block text-xs font-medium text-theme-text-muted mb-2">Comentário (Opcional)</label>
+                    <textarea
+                      id="comment"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="O que achou deste item?"
+                      rows={3}
+                      className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-sm text-theme-text focus:outline-none focus:border-theme-accent transition-colors resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${
+                      isSubmitting 
+                        ? 'bg-theme-border text-theme-text-muted cursor-not-allowed' 
+                        : 'bg-theme-accent text-white hover:bg-theme-accent/90 active:scale-[0.98]'
+                    }`}
+                  >
+                    {isSubmitting ? 'Enviando...' : 'Enviar Avaliação'}
+                  </button>
+                </form>
+
+                {/* Reviews List */}
+                <div className="space-y-4">
+                  {reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <div key={review.id} className="bg-theme-bg border border-theme-border rounded-xl p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <span className="font-bold text-theme-text text-sm block">{review.author}</span>
+                            <span className="text-xs text-theme-text-muted">{new Date(review.date).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                          <div className="flex gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                size={12} 
+                                className={i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-theme-border'} 
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-theme-text-muted mt-2 leading-relaxed">{review.comment}</p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 bg-theme-bg border border-theme-border border-dashed rounded-xl">
+                      <Star size={32} className="text-theme-border mx-auto mb-3" />
+                      <p className="text-theme-text-muted text-sm">Nenhuma avaliação ainda.<br/>Seja o primeiro a avaliar!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer Action */}
+            {(!product.variacoes || product.variacoes.length === 0) && (
+              <div className="p-4 bg-theme-card border-t border-theme-border shrink-0">
+                <button
+                  onClick={() => {
+                    onAddToCart();
+                    onClose();
+                  }}
+                  className="w-full bg-theme-accent text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-theme-accent/90 active:scale-[0.98] transition-all"
+                >
+                  <Plus size={18} strokeWidth={2.5} />
+                  Adicionar ao Carrinho
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // Reusable Card Component with Micro-interaction
-const ProductCard = ({ nome, desc, preco, icon: Icon, popular, imagem, onAdd }: { key?: React.Key, nome: string, desc?: string, preco: number, icon: any, popular?: boolean, imagem?: string, onAdd: () => void }) => {
+const ProductCard = React.memo(({ item, icon: Icon, onAdd, onOpenDetails, isSophisticatedMode = false, index = 0 }: { key?: React.Key, item: any, icon: any, onAdd: (item: any) => void, onOpenDetails: (item: any) => void, isSophisticatedMode?: boolean, index?: number }) => {
+  const { nome, desc, preco, popular, imagem } = item;
   const [isAdded, setIsAdded] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAdd();
+    if (item.variacoes && item.variacoes.length > 0) {
+      onOpenDetails(item);
+      return;
+    }
+    onAdd(item);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 800);
   };
@@ -132,7 +480,10 @@ const ProductCard = ({ nome, desc, preco, icon: Icon, popular, imagem, onAdd }: 
   };
 
   return (
-    <div 
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut", delay: index * 0.05 }}
       className="w-full h-full group cursor-pointer transition-transform duration-300 hover:-translate-y-1.5" 
       style={{ perspective: '1000px' }}
     >
@@ -146,41 +497,55 @@ const ProductCard = ({ nome, desc, preco, icon: Icon, popular, imagem, onAdd }: 
       >
         {/* FRONT FACE (Info) */}
         <div 
-          className={`relative w-full h-full min-h-[200px] flex flex-col rounded-3xl bg-theme-card border ${popular ? 'border-theme-accent/30' : 'border-theme-border'} shadow-theme-card group-hover:shadow-theme-card-hover p-4 md:p-5 transition-shadow duration-300`}
+          className={`relative w-full h-full min-h-[200px] flex flex-col rounded-3xl bg-theme-card border ${popular ? 'border-theme-accent/30' : 'border-theme-border'} shadow-theme-card group-hover:shadow-theme-card-hover p-4 md:p-5 transition-shadow duration-300 ${isSophisticatedMode ? 'items-center text-center' : ''}`}
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
           {popular && (
-            <div className="absolute top-0 left-0 bg-theme-accent/10 border-b border-r border-theme-accent/20 text-theme-accent px-3 py-1.5 rounded-br-2xl rounded-tl-3xl z-10 flex items-center gap-1.5">
+            <div className={`absolute top-0 left-0 bg-theme-accent/10 border-b border-r border-theme-accent/20 text-theme-accent px-3 py-1.5 rounded-br-2xl rounded-tl-3xl z-10 flex items-center gap-1.5 ${isSophisticatedMode ? 'left-1/2 -translate-x-1/2 rounded-b-2xl rounded-t-none border-l' : ''}`}>
               <Star size={12} className="fill-theme-accent" />
               <span className="text-[10px] font-bold uppercase tracking-wider">Mais Pedido</span>
             </div>
           )}
           
-          <div className={`flex flex-col h-full ${popular ? 'pt-6' : ''}`}>
-            <div className="flex justify-between items-start mb-2 gap-2">
-              <h3 className="text-base md:text-lg font-semibold text-theme-text leading-tight group-hover:text-theme-accent transition-colors duration-300">
+          <div className={`flex flex-col h-full w-full ${popular ? 'pt-6' : ''}`}>
+            {isSophisticatedMode && (
+              <div className="flex justify-center mb-4 opacity-70">
+                <Wine size={32} strokeWidth={1} />
+              </div>
+            )}
+            <div className={`flex ${isSophisticatedMode ? 'justify-center' : 'justify-between'} items-start mb-2 gap-2`}>
+              <h3 className={`text-base md:text-lg font-semibold text-theme-text leading-tight group-hover:text-theme-accent transition-colors duration-300 ${isSophisticatedMode ? 'font-serif text-xl' : ''}`}>
                 {nome}
               </h3>
             </div>
             
-            <span className="text-theme-accent font-bold font-serif text-lg md:text-xl mb-2">{formatCurrency(preco)}</span>
+            <span className={`text-theme-accent font-bold font-serif text-lg md:text-xl mb-2 ${isSophisticatedMode ? 'text-2xl my-2' : ''}`}>{formatCurrency(preco)}</span>
             
             {desc && (
-              <p className="text-xs md:text-sm text-theme-text-muted italic leading-relaxed flex-1">{desc}</p>
+              <p className={`text-xs md:text-sm text-theme-text-muted italic leading-relaxed flex-1 ${isSophisticatedMode ? 'font-serif' : ''}`}>{desc}</p>
             )}
             
-            <div className="flex justify-end items-center mt-auto pt-4">
+            <div className={`flex ${isSophisticatedMode ? 'justify-center' : 'justify-end'} items-center mt-auto pt-4 gap-2`}>
               <div 
+                onClick={(e) => { e.stopPropagation(); onOpenDetails(item); }}
+                className={`flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-xl transition-all duration-100 bg-theme-accent/10 text-theme-accent hover:bg-theme-accent hover:text-white active:scale-95 ${isSophisticatedMode ? 'rounded-full' : ''}`}
+                title="Detalhes e Avaliações"
+              >
+                <Info size={18} strokeWidth={2.5} />
+              </div>
+              <motion.div 
+                whileTap={{ scale: 0.85 }}
+                animate={isAdded ? { scale: [1, 1.15, 1], transition: { duration: 0.3 } } : {}}
                 onClick={handleAdd}
-                className={`flex items-center gap-1.5 font-medium text-xs md:text-sm px-3.5 py-2 rounded-xl transition-all duration-100 ${
+                className={`flex items-center gap-1.5 font-medium text-xs md:text-sm px-3.5 py-2 md:py-2.5 rounded-xl transition-all duration-100 cursor-pointer ${
                   isAdded 
-                    ? 'bg-theme-accent text-white scale-[1.02]' 
-                    : 'bg-theme-accent/10 text-theme-accent hover:bg-theme-accent hover:text-white active:scale-95'
-                }`}
+                    ? 'bg-theme-accent text-white' 
+                    : 'bg-theme-accent/10 text-theme-accent hover:bg-theme-accent hover:text-white'
+                } ${isSophisticatedMode ? 'rounded-full px-6 uppercase tracking-widest text-[10px]' : ''}`}
               >
                 {isAdded ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
                 <span>{isAdded ? 'Adicionado' : 'Adicionar'}</span>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -224,25 +589,34 @@ const ProductCard = ({ nome, desc, preco, icon: Icon, popular, imagem, onAdd }: 
             )}
             
             {/* Overlay Add Button on Back too */}
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center px-4">
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center px-4 gap-2">
               <div 
+                onClick={(e) => { e.stopPropagation(); onOpenDetails(item); }}
+                className={`flex items-center justify-center w-10 h-10 transition-all duration-100 shadow-md backdrop-blur-md bg-theme-bg/90 text-theme-accent hover:bg-theme-accent hover:text-white active:scale-95 ${isSophisticatedMode ? 'rounded-full' : 'rounded-xl'}`}
+                title="Detalhes e Avaliações"
+              >
+                <Info size={18} strokeWidth={2.5} />
+              </div>
+              <motion.div 
+                whileTap={{ scale: 0.85 }}
+                animate={isAdded ? { scale: [1, 1.15, 1], transition: { duration: 0.3 } } : {}}
                 onClick={handleAdd}
-                className={`flex items-center gap-1.5 font-medium text-xs md:text-sm px-5 py-2.5 rounded-xl transition-all duration-100 shadow-md backdrop-blur-md ${
+                className={`flex items-center gap-1.5 font-medium text-xs md:text-sm px-5 py-2.5 transition-all duration-100 shadow-md backdrop-blur-md cursor-pointer ${
                   isAdded 
-                    ? 'bg-theme-accent text-white scale-[1.02]' 
-                    : 'bg-theme-bg/90 text-theme-accent hover:bg-theme-accent hover:text-white active:scale-95'
-                }`}
+                    ? 'bg-theme-accent text-white' 
+                    : 'bg-theme-bg/90 text-theme-accent hover:bg-theme-accent hover:text-white'
+                } ${isSophisticatedMode ? 'rounded-full uppercase tracking-widest text-[10px]' : 'rounded-xl'}`}
               >
                 {isAdded ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
                 <span>{isAdded ? 'Adicionado' : 'Adicionar'}</span>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
-};
+});
 
 const ProductCardSkeleton = () => (
   <div className="w-full h-full min-h-[200px] flex flex-col rounded-3xl bg-theme-card border border-theme-border shadow-theme-card p-4 md:p-5 animate-pulse">
@@ -272,33 +646,218 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [reviews, setReviews] = useState<Record<string, Review[]>>({});
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('borgert_dark_mode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [isContactMenuOpen, setIsContactMenuOpen] = useState(false);
+  const [isReservationModalOpen, setIsReservationModalOpen] = useState(false);
+  const [reservationForm, setReservationForm] = useState({
+    data: '',
+    hora: '',
+    nome: '',
+    quantidade: '',
+    obs: ''
+  });
+  const [reservationError, setReservationError] = useState('');
+  const [reservationSuccess, setReservationSuccess] = useState(false);
 
-  // Persist cart to localStorage
+  const availableDates = useMemo(() => {
+    const dates = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const day = d.getDay();
+      
+      if (day === 0 || day === 5 || day === 6) {
+        if (i === 0) {
+          const now = new Date();
+          const currentHour = now.getHours();
+          if (day === 5 && currentHour >= 23) continue;
+          if (day === 6 && currentHour >= 23) continue;
+          if (day === 0 && currentHour >= 15) continue;
+        }
+        dates.push(d);
+      }
+    }
+    return dates;
+  }, []);
+
+  const availableTimes = useMemo(() => {
+    if (!reservationForm.data) return [];
+    
+    const [y, m, d] = reservationForm.data.split('-').map(Number);
+    const selectedDate = new Date(y, m - 1, d);
+    const day = selectedDate.getDay();
+    
+    const isToday = new Date().toDateString() === selectedDate.toDateString();
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    const times = [];
+    const addRange = (startH, endH) => {
+      for (let h = startH; h <= endH; h++) {
+        for (let min of [0, 30]) {
+          if (h === endH && min === 30) continue;
+          if (isToday) {
+            if (h < currentHour || (h === currentHour && min <= currentMinute)) continue;
+          }
+          times.push(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+        }
+      }
+    };
+
+    if (day === 5) {
+      addRange(18, 22);
+    } else if (day === 6) {
+      addRange(11, 14);
+      addRange(18, 22);
+    } else if (day === 0) {
+      addRange(11, 14);
+    }
+
+    return times;
+  }, [reservationForm.data]);
+
+  const whatsappOptions = [
+    { id: 'reservas', label: 'Reservas de Mesa', icon: Calendar, type: 'form' },
+    { id: 'eventos', label: 'Eventos e Contato', icon: Users, type: 'whatsapp', message: 'Olá! Gostaria de informações sobre eventos e outras dúvidas.' },
+  ];
+
+  const handleReservationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setReservationError('');
+
+    if (!reservationForm.data || !reservationForm.hora) {
+      setReservationError('Por favor, selecione uma data e um horário.');
+      return;
+    }
+
+    const [y, m, d] = reservationForm.data.split('-').map(Number);
+    const [hours, minutes] = reservationForm.hora.split(':').map(Number);
+    const selectedDate = new Date(y, m - 1, d, hours, minutes);
+    const now = new Date();
+    
+    if (selectedDate < now) {
+      setReservationError('A data e hora da reserva não podem ser no passado.');
+      return;
+    }
+
+    // Validate quantity
+    const quantity = parseInt(reservationForm.quantidade, 10);
+    if (isNaN(quantity) || quantity <= 0) {
+      setReservationError('A quantidade de pessoas deve ser um número positivo.');
+      return;
+    }
+
+    if (quantity > 20) {
+      setReservationError('Para reservas acima de 20 pessoas, por favor entre em contato via WhatsApp de eventos.');
+      return;
+    }
+
+    const text = `*🍽️ Nova Solicitação de Reserva*
+*👤 Nome:* ${reservationForm.nome}
+*📅 Data:* ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(selectedDate)} às ${reservationForm.hora}
+*👥 Quantidade de pessoas:* ${quantity}
+*📝 Observações:* ${reservationForm.obs || 'Nenhuma'}
+
+*✨ Aguardamos vocês para uma experiência incrível!*`;
+    
+    setReservationSuccess(true);
+    
+    setTimeout(() => {
+      window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(text)}`, '_blank');
+      setIsReservationModalOpen(false);
+      setReservationSuccess(false);
+      setReservationForm({ data: '', hora: '', nome: '', quantidade: '', obs: '' });
+    }, 2000);
+  };
+
+  // Persist dark mode to localStorage and apply class
+  useEffect(() => {
+    localStorage.setItem('borgert_dark_mode', JSON.stringify(isDarkMode));
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
   useEffect(() => {
     localStorage.setItem('borgert_cart', JSON.stringify(cart));
   }, [cart]);
 
+  // Fetch reviews from server
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch('/api/reviews');
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch reviews:', error);
+      }
+    };
+    fetchReviews();
+  }, []);
+
+  const handleAddReview = React.useCallback(async (productName: string, review: Omit<Review, 'id' | 'date'>) => {
+    try {
+      const response = await fetch(`/api/reviews/${encodeURIComponent(productName)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(review),
+      });
+
+      if (response.ok) {
+        const newReview = await response.json();
+        setReviews(prev => ({
+          ...prev,
+          [productName]: [...(prev[productName] || []), newReview]
+        }));
+      } else {
+        alert('Erro ao salvar avaliação. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Failed to save review:', error);
+      alert('Erro ao salvar avaliação. Tente novamente.');
+    }
+  }, []);
+
   // Handle category switching with skeleton loading
-  const handleCategoryChange = (category: MainCategory) => {
-    if (category === activeCategory) return;
-    setIsLoading(true);
-    setActiveCategory(category);
-    setActiveSubcategory(category === 'comidas' ? comidas[0].subcategoria : bebidas[0].subcategoria);
-    setSearchQuery("");
-    setSelectedTags([]);
-    setTimeout(() => setIsLoading(false), 300);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const handleCategoryChange = React.useCallback((category: MainCategory) => {
+    setActiveCategory((prev) => {
+      if (category === prev) return prev;
+      setIsLoading(true);
+      setActiveSubcategory(category === 'comidas' ? comidas[0].subcategoria : bebidas[0].subcategoria);
+      setSearchQuery("");
+      setSelectedTags([]);
+      setTimeout(() => setIsLoading(false), 300);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return category;
+    });
+  }, []);
 
   // Handle subcategory switching with skeleton loading
-  const handleSubcategoryChange = (subcat: string) => {
-    if (subcat === activeSubcategory) return;
-    setIsLoading(true);
-    setActiveSubcategory(subcat);
-    setSelectedTags([]);
-    setTimeout(() => setIsLoading(false), 300);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const handleSubcategoryChange = React.useCallback((subcat: string) => {
+    setActiveSubcategory((prev) => {
+      if (subcat === prev) return prev;
+      setIsLoading(true);
+      setSelectedTags([]);
+      setTimeout(() => setIsLoading(false), 300);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return subcat;
+    });
+  }, []);
 
   // Prevent background scrolling when cart is open on mobile
   useEffect(() => {
@@ -312,23 +871,24 @@ export default function App() {
     };
   }, [isCartOpen]);
 
-  const addToCart = (nome: string, preco: number) => {
+  const addToCart = React.useCallback((item: any, variacao?: string) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.nome === nome);
+      const nomeCompleto = variacao ? `${item.nome} - ${variacao}` : item.nome;
+      const existing = prev.find((i) => i.nome === nomeCompleto);
       if (existing) {
-        return prev.map((item) =>
-          item.nome === nome ? { ...item, quantidade: item.quantidade + 1 } : item
+        return prev.map((i) =>
+          i.nome === nomeCompleto ? { ...i, quantidade: i.quantidade + 1 } : i
         );
       }
-      return [...prev, { nome, preco, quantidade: 1 }];
+      return [...prev, { nome: nomeCompleto, preco: item.preco, quantidade: 1, imagem: item.imagem }];
     });
     
     // Trigger cart pulse animation
     setCartPulse(true);
-    setTimeout(() => setCartPulse(false), 300);
-  };
+    setTimeout(() => setCartPulse(false), 400);
+  }, []);
 
-  const updateQuantity = (nome: string, delta: number) => {
+  const updateQuantity = React.useCallback((nome: string, delta: number) => {
     setCart((prev) =>
       prev
         .map((item) => {
@@ -339,7 +899,7 @@ export default function App() {
         })
         .filter((item) => item.quantidade > 0)
     );
-  };
+  }, []);
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantidade, 0);
   const subtotal = cart.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
@@ -353,8 +913,8 @@ export default function App() {
   // Search logic
   const allItems = useMemo(() => {
     return [
-      ...comidas.flatMap(c => c.itens.map(i => ({ ...i, category: 'comidas', icon: UtensilsCrossed }))),
-      ...bebidas.flatMap(b => b.itens.map(i => ({ ...i, category: 'bebidas', icon: Wine })))
+      ...comidas.flatMap(c => c.itens.map(i => ({ ...i, category: 'comidas', subcategoria: c.subcategoria, icon: UtensilsCrossed }))),
+      ...bebidas.flatMap(b => b.itens.map(i => ({ ...i, category: 'bebidas', subcategoria: b.subcategoria, icon: Wine })))
     ];
   }, []);
 
@@ -378,12 +938,12 @@ export default function App() {
     );
   }, [currentSectionItems, selectedTags]);
 
-  // Apply sophisticated theme to body for full page coverage
+  // Apply sophisticated theme to html for full page coverage
   useEffect(() => {
     if (isSophisticatedMode) {
-      document.body.classList.add('theme-sophisticated');
+      document.documentElement.classList.add('theme-sophisticated');
     } else {
-      document.body.classList.remove('theme-sophisticated');
+      document.documentElement.classList.remove('theme-sophisticated');
     }
   }, [isSophisticatedMode]);
 
@@ -406,9 +966,49 @@ export default function App() {
   }, [searchQuery, allItems, selectedTags]);
 
   return (
-    <div className={`min-h-screen bg-theme-bg text-theme-text font-sans selection:bg-theme-accent selection:text-white relative flex flex-col w-full overflow-x-hidden transition-colors duration-300 ${isSophisticatedMode ? 'theme-sophisticated' : ''}`}>
+    <div className={`min-h-screen bg-theme-bg text-theme-text ${isSophisticatedMode ? 'font-serif' : 'font-sans'} selection:bg-theme-accent selection:text-white relative flex flex-col w-full overflow-x-hidden transition-colors duration-300 ${isSophisticatedMode ? 'theme-sophisticated' : ''}`}>
       {/* Header */}
-      <header className="safe-pt pb-6 flex flex-col items-center justify-center text-center px-4 shrink-0">
+      <header className="safe-pt pb-6 flex flex-col items-center justify-center text-center px-4 shrink-0 relative">
+        <div className="absolute top-0 right-0 p-4 md:p-8 safe-pt w-full flex justify-end gap-3 pointer-events-none">
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="pointer-events-auto p-2.5 rounded-full bg-theme-card border border-theme-border text-theme-text-muted hover:text-theme-accent hover:border-theme-accent/50 transition-all duration-200 shadow-sm z-20"
+            aria-label="Toggle Dark Mode"
+          >
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          
+          {totalItems > 0 && (
+            <motion.button
+              animate={{ 
+                scale: cartPulse ? [1, 1.15, 1] : 1,
+              }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setIsCartOpen(true)}
+              className="pointer-events-auto relative p-2.5 rounded-full bg-theme-card border border-theme-border text-theme-text-muted hover:text-theme-accent hover:border-theme-accent/50 transition-all duration-200 shadow-sm z-20"
+              aria-label="Open Cart"
+            >
+              <motion.div
+                animate={{ 
+                  rotate: cartPulse ? [0, -20, 20, -20, 20, 0] : 0,
+                  scale: cartPulse ? [1, 1.2, 1] : 1
+                }}
+                transition={{ duration: 0.4 }}
+              >
+                <ShoppingCart size={20} />
+              </motion.div>
+              <motion.span 
+                key={totalItems}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                className="absolute -top-1.5 -right-1.5 bg-theme-accent text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-theme-bg shadow-sm"
+              >
+                {totalItems}
+              </motion.span>
+            </motion.button>
+          )}
+        </div>
         <div className="mb-4 flex flex-col items-center">
           <div className="relative flex items-center justify-center w-20 h-14 overflow-hidden">
             <div className="absolute top-0 w-20 h-20 rounded-full border-t-[3px] border-l-[3px] border-r-[3px] border-theme-border border-dashed opacity-80"></div>
@@ -432,7 +1032,7 @@ export default function App() {
             onClick={() => handleCategoryChange('comidas')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-colors duration-150 relative z-10 active:scale-[0.98] ${
               activeCategory === 'comidas' 
-                ? 'bg-theme-text text-white shadow-md' 
+                ? 'bg-theme-text text-theme-bg shadow-md' 
                 : 'text-theme-text-muted hover:text-theme-text'
             }`}
           >
@@ -473,33 +1073,6 @@ export default function App() {
             </button>
           )}
         </div>
-
-        {/* Tag Filters */}
-        {availableTags.length > 0 && (
-          <div className="max-w-md mx-auto">
-            <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2 -mx-4 px-4 md:mx-0 md:px-0">
-              {availableTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => {
-                    setSelectedTags(prev => 
-                      prev.includes(tag) 
-                        ? prev.filter(t => t !== tag)
-                        : [...prev, tag]
-                    );
-                  }}
-                  className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors border ${
-                    selectedTags.includes(tag)
-                      ? 'bg-theme-accent text-white border-theme-accent'
-                      : 'bg-theme-card text-theme-text-muted border-theme-border hover:border-theme-accent/50 hover:text-theme-accent'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 md:px-12 py-4 flex flex-col overflow-hidden relative">
@@ -518,14 +1091,13 @@ export default function App() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                   {searchResults.map((item, idx) => (
                     <ProductCard 
-                      key={idx} 
-                      nome={item.nome} 
-                      desc={item.desc} 
-                      preco={item.preco} 
+                      key={item.nome} 
+                      index={idx}
+                      item={item}
                       icon={item.icon} 
-                      popular={(item as any).popular}
-                      imagem={item.imagem}
-                      onAdd={() => addToCart(item.nome, item.preco)}
+                      onAdd={addToCart}
+                      onOpenDetails={setSelectedProduct}
+                      isSophisticatedMode={item.subcategoria === 'Vinhos'}
                     />
                   ))}
                 </div>
@@ -571,8 +1143,9 @@ export default function App() {
                   {activeComidaSection && (
                     <div className="flex-1">
                       <div className="text-center mb-8">
-                        <h3 className="text-2xl md:text-3xl font-bold text-theme-text uppercase tracking-widest font-serif inline-block relative">
-                          {activeComidaSection.subcategoria}
+                        <h3 className="text-2xl md:text-3xl font-bold text-theme-text uppercase tracking-widest font-serif inline-flex items-center justify-center gap-3 relative">
+                          <UtensilsCrossed size={28} className="text-theme-accent/80" />
+                          <span>{activeComidaSection.subcategoria}</span>
                           <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-8 h-[2px] bg-theme-accent/60"></div>
                         </h3>
                       </div>
@@ -585,14 +1158,12 @@ export default function App() {
                         ) : filteredItems.length > 0 ? (
                           filteredItems.map((item, idx) => (
                             <ProductCard 
-                              key={idx} 
-                              nome={item.nome} 
-                              desc={item.desc} 
-                              preco={item.preco} 
+                              key={item.nome} 
+                              index={idx}
+                              item={item}
                               icon={UtensilsCrossed} 
-                              popular={(item as any).popular}
-                              imagem={(item as any).imagem}
-                              onAdd={() => addToCart(item.nome, item.preco)}
+                              onAdd={addToCart}
+                              onOpenDetails={setSelectedProduct}
                             />
                           ))
                         ) : (
@@ -639,8 +1210,9 @@ export default function App() {
               {activeBebidaSection && (
                 <div className="flex-1">
                   <div className="text-center mb-8">
-                    <h3 className="text-2xl md:text-3xl font-bold text-theme-text uppercase tracking-widest font-serif inline-block relative">
-                      {activeBebidaSection.subcategoria}
+                    <h3 className="text-2xl md:text-3xl font-bold text-theme-text uppercase tracking-widest font-serif inline-flex items-center justify-center gap-3 relative">
+                      <Wine size={28} className="text-theme-accent/80" />
+                      <span>{activeBebidaSection.subcategoria}</span>
                       <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-8 h-[2px] bg-theme-accent/60"></div>
                     </h3>
                   </div>
@@ -651,16 +1223,15 @@ export default function App() {
                         <ProductCardSkeleton key={idx} />
                       ))
                     ) : filteredItems.length > 0 ? (
-                      filteredItems.map((item, itemIdx) => (
+                      filteredItems.map((item, idx) => (
                         <ProductCard 
-                          key={itemIdx} 
-                          nome={item.nome} 
-                          desc={item.desc} 
-                          preco={item.preco} 
+                          key={item.nome} 
+                          index={idx}
+                          item={item}
                           icon={Wine} 
-                          popular={(item as any).popular}
-                          imagem={(item as any).imagem}
-                          onAdd={() => addToCart(item.nome, item.preco)}
+                          onAdd={addToCart}
+                          onOpenDetails={setSelectedProduct}
+                          isSophisticatedMode={isSophisticatedMode}
                         />
                       ))
                     ) : (
@@ -683,6 +1254,218 @@ export default function App() {
         <p className="text-theme-text-muted text-xs font-serif italic">Obrigado pela preferência!</p>
       </footer>
 
+      {/* WhatsApp Floating Button & Menu */}
+      <div className="fixed bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-4 md:left-8 z-40">
+        <AnimatePresence>
+          {isContactMenuOpen && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-30"
+                onClick={() => setIsContactMenuOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-16 left-0 w-64 md:w-72 bg-theme-card rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-theme-border p-2 mb-2 origin-bottom-left z-40"
+              >
+                <div className="p-3 border-b border-theme-border/50 mb-2">
+                  <h4 className="font-semibold text-theme-text text-sm">Como podemos ajudar?</h4>
+                  <p className="text-xs text-theme-text-muted mt-0.5">Escolha uma opção de contato</p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  {whatsappOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => {
+                        if (option.type === 'form') {
+                          setIsReservationModalOpen(true);
+                        } else {
+                          window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(option.message || '')}`, '_blank');
+                        }
+                        setIsContactMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full p-3 hover:bg-theme-bg rounded-xl transition-colors text-left group"
+                    >
+                      <div className="bg-theme-bg group-hover:bg-theme-card p-2 rounded-lg transition-colors border border-theme-border/50">
+                        <option.icon size={16} className="text-theme-accent" />
+                      </div>
+                      <span className="text-sm font-medium text-theme-text group-hover:text-theme-accent transition-colors">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setIsContactMenuOpen(!isContactMenuOpen)}
+          className="relative bg-[#25D366] text-white p-4 md:p-5 rounded-full shadow-[0_8px_30px_rgba(37,211,102,0.3)] hover:shadow-[0_8px_40px_rgba(37,211,102,0.4)] transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95 z-40"
+          aria-label="Contato WhatsApp"
+        >
+          {isContactMenuOpen ? (
+            <X size={24} strokeWidth={2.5} />
+          ) : (
+            <svg viewBox="0 0 24 24" fill="currentColor" height="28" width="28">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Reservation Form Modal */}
+      <AnimatePresence>
+        {isReservationModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsReservationModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-theme-card rounded-3xl shadow-2xl overflow-hidden border border-theme-border"
+            >
+              <div className="p-6 border-b border-theme-border flex justify-between items-center bg-theme-bg/50">
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-theme-text">Reserva de Mesa</h3>
+                  <p className="text-sm text-theme-text-muted mt-1">Preencha os dados para solicitar sua reserva</p>
+                </div>
+                <button 
+                  onClick={() => setIsReservationModalOpen(false)}
+                  className="p-2 bg-theme-card hover:bg-theme-border/50 rounded-full transition-colors"
+                >
+                  <X size={20} className="text-theme-text" />
+                </button>
+              </div>
+              
+              {reservationSuccess ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-12 flex flex-col items-center justify-center text-center space-y-4"
+                >
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                    className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-2"
+                  >
+                    <Check size={40} className="text-green-500" />
+                  </motion.div>
+                  <h3 className="text-2xl font-serif font-bold text-theme-text">Reserva Pronta!</h3>
+                  <p className="text-theme-text-muted">Redirecionando para o WhatsApp...</p>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleReservationSubmit} className="p-6 space-y-4">
+                  {reservationError && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-sm">
+                      {reservationError}
+                    </div>
+                  )}
+                  <div>
+                    <label htmlFor="nome" className="block text-sm font-medium text-theme-text mb-1.5">Nome Completo</label>
+                    <input
+                      type="text"
+                      id="nome"
+                      required
+                      value={reservationForm.nome}
+                      onChange={(e) => setReservationForm({...reservationForm, nome: e.target.value})}
+                      className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all"
+                      placeholder="Seu nome"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label htmlFor="data" className="block text-sm font-medium text-theme-text mb-1.5">Data</label>
+                      <select
+                        id="data"
+                        required
+                        value={reservationForm.data}
+                        onChange={(e) => setReservationForm({...reservationForm, data: e.target.value, hora: ''})}
+                        className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all appearance-none"
+                      >
+                        <option value="" disabled>Selecione a data</option>
+                        {availableDates.map(date => {
+                          const y = date.getFullYear();
+                          const m = String(date.getMonth() + 1).padStart(2, '0');
+                          const d = String(date.getDate()).padStart(2, '0');
+                          const value = `${y}-${m}-${d}`;
+                          const label = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).format(date);
+                          return <option key={value} value={value}>{label.charAt(0).toUpperCase() + label.slice(1)}</option>;
+                        })}
+                      </select>
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <label htmlFor="hora" className="block text-sm font-medium text-theme-text mb-1.5">Horário</label>
+                      <select
+                        id="hora"
+                        required
+                        disabled={!reservationForm.data || availableTimes.length === 0}
+                        value={reservationForm.hora}
+                        onChange={(e) => setReservationForm({...reservationForm, hora: e.target.value})}
+                        className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="" disabled>
+                          {!reservationForm.data ? 'Selecione a data' : (availableTimes.length === 0 ? 'Sem horários' : 'Selecione o horário')}
+                        </option>
+                        {availableTimes.map(time => (
+                          <option key={time} value={time}>{time}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <label htmlFor="quantidade" className="block text-sm font-medium text-theme-text mb-1.5">Pessoas</label>
+                      <input
+                        type="number"
+                        id="quantidade"
+                        min="1"
+                        max="20"
+                        required
+                        value={reservationForm.quantidade}
+                        onChange={(e) => setReservationForm({...reservationForm, quantidade: e.target.value})}
+                        className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all"
+                        placeholder="Ex: 4"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="obs" className="block text-sm font-medium text-theme-text mb-1.5">Observações (Opcional)</label>
+                    <textarea
+                      id="obs"
+                      rows={3}
+                      value={reservationForm.obs}
+                      onChange={(e) => setReservationForm({...reservationForm, obs: e.target.value})}
+                      className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all resize-none"
+                      placeholder="Alguma preferência ou restrição?"
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    className="w-full mt-2 bg-[#25D366] text-white py-4 rounded-xl font-semibold tracking-wide transition-all duration-150 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl hover:bg-[#20bd5a] active:scale-[0.98]"
+                  >
+                    <MessageSquare size={20} />
+                    <span>Enviar Solicitação via WhatsApp</span>
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Floating Cart Button */}
       <AnimatePresence>
         {totalItems > 0 && (
@@ -704,8 +1487,11 @@ export default function App() {
             className="fixed bottom-[max(env(safe-area-inset-bottom),1.5rem)] right-4 md:right-8 bg-theme-accent text-white p-4 md:p-5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.3)] transition-all duration-150 z-40 flex items-center justify-center group"
           >
             <motion.div
-              animate={{ rotate: cartPulse ? [-10, 10, -10, 0] : 0 }}
-              transition={{ duration: 0.2 }}
+              animate={{ 
+                rotate: cartPulse ? [0, -20, 20, -20, 20, 0] : 0,
+                scale: cartPulse ? [1, 1.2, 1] : 1
+              }}
+              transition={{ duration: 0.4 }}
             >
               <ShoppingCart size={24} strokeWidth={2.5} />
             </motion.div>
@@ -751,40 +1537,64 @@ export default function App() {
 
           <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 overscroll-contain hide-scrollbar">
             {cart.length === 0 ? (
-              <div className="text-center text-theme-text-muted mt-16 italic font-serif flex flex-col items-center">
-                <div className="w-24 h-24 bg-theme-card rounded-full flex items-center justify-center mb-6 shadow-sm border border-theme-border">
-                  <ShoppingCart size={40} className="opacity-30" />
+              <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12">
+                <div className="relative w-32 h-32 mb-6">
+                  <div className="absolute inset-0 bg-theme-accent/10 rounded-full animate-pulse"></div>
+                  <div className="absolute inset-2 bg-theme-card rounded-full shadow-sm border border-theme-border flex items-center justify-center">
+                    <UtensilsCrossed size={48} className="text-theme-accent/50" strokeWidth={1.5} />
+                  </div>
                 </div>
-                <p className="text-lg">Seu pedido está vazio.</p>
+                <h3 className="text-2xl font-serif font-bold text-theme-text mb-2">Seu pedido está vazio</h3>
+                <p className="text-theme-text-muted text-sm md:text-base max-w-[250px] mx-auto leading-relaxed">
+                  Que tal explorar nosso cardápio e adicionar algumas delícias?
+                </p>
+                <button 
+                  onClick={() => setIsCartOpen(false)}
+                  className="mt-8 px-8 py-3 bg-theme-bg border-2 border-theme-accent text-theme-accent rounded-xl font-semibold hover:bg-theme-accent hover:text-white transition-colors duration-200 active:scale-95"
+                >
+                  Ver Cardápio
+                </button>
               </div>
             ) : (
               <>
                 {cart.map((item) => (
                   <div 
                     key={item.nome}
-                    className="flex items-center justify-between bg-theme-card p-4 rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-theme-border"
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 bg-theme-card p-3 md:p-4 rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-theme-border"
                   >
-                    <div className="flex-1 pr-4">
-                      <h4 className="font-semibold text-theme-text text-sm md:text-base leading-tight">{item.nome}</h4>
-                      <p className="text-theme-accent text-sm font-serif mt-1.5 font-medium">{formatCurrency(item.preco)}</p>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {item.imagem ? (
+                        <img src={`${item.imagem}.webp`} alt={item.nome} className="w-14 h-14 rounded-xl object-cover border border-theme-border/50 shrink-0" referrerPolicy="no-referrer" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-xl bg-theme-border/20 flex items-center justify-center shrink-0">
+                          <UtensilsCrossed size={20} className="text-theme-text-muted opacity-50" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0 pr-2">
+                        <h4 className="font-semibold text-theme-text text-sm md:text-base leading-tight truncate">{item.nome}</h4>
+                        <p className="text-theme-accent text-sm font-serif mt-1 font-medium">{formatCurrency(item.preco)}</p>
+                      </div>
                     </div>
                     
-                    <div className="flex items-center space-x-3 bg-theme-bg rounded-xl p-1.5 border border-theme-border shadow-inner">
-                      <button 
-                        onClick={() => updateQuantity(item.nome, -1)}
-                        className="w-8 h-8 flex items-center justify-center text-theme-text hover:text-theme-accent hover:bg-theme-card rounded-lg transition-all active:scale-90 shadow-sm"
-                      >
-                        <Minus size={16} strokeWidth={2.5} />
-                      </button>
-                      <span className="w-5 text-center font-bold text-theme-text text-sm">
-                        {item.quantidade}
-                      </span>
-                      <button 
-                        onClick={() => updateQuantity(item.nome, 1)}
-                        className="w-8 h-8 flex items-center justify-center text-theme-text hover:text-theme-accent hover:bg-theme-card rounded-lg transition-all active:scale-90 shadow-sm"
-                      >
-                        <Plus size={16} strokeWidth={2.5} />
-                      </button>
+                    <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto mt-1 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-theme-border/50">
+                      <span className="text-xs text-theme-text-muted font-medium sm:hidden">Quantidade:</span>
+                      <div className="flex items-center space-x-3 bg-theme-bg rounded-xl p-1 border border-theme-border shadow-inner">
+                        <button 
+                          onClick={() => updateQuantity(item.nome, -1)}
+                          className="w-8 h-8 flex items-center justify-center text-theme-text hover:text-theme-accent hover:bg-theme-card rounded-lg transition-all active:scale-90 shadow-sm"
+                        >
+                          <Minus size={16} strokeWidth={2.5} />
+                        </button>
+                        <span className="w-6 text-center font-bold text-theme-text text-sm">
+                          {item.quantidade}
+                        </span>
+                        <button 
+                          onClick={() => updateQuantity(item.nome, 1)}
+                          className="w-8 h-8 flex items-center justify-center text-theme-text hover:text-theme-accent hover:bg-theme-card rounded-lg transition-all active:scale-90 shadow-sm"
+                        >
+                          <Plus size={16} strokeWidth={2.5} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -792,23 +1602,33 @@ export default function App() {
             )}
           </div>
 
-          <div className="p-6 md:p-8 border-t border-theme-border bg-theme-card safe-pb shrink-0 rounded-t-3xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-theme-text-muted font-semibold uppercase tracking-widest text-xs">Total de Itens</span>
-              <span className="text-lg font-serif text-theme-text font-bold">{totalItems}</span>
+          <div className="p-5 md:p-8 border-t border-theme-border bg-theme-card safe-pb shrink-0 rounded-t-3xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-10">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-theme-text-muted font-medium text-sm">Total de Itens</span>
+              <span className="text-theme-text font-bold">{totalItems}</span>
             </div>
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-theme-text-muted font-semibold uppercase tracking-widest text-xs">Subtotal</span>
-              <span className="text-2xl font-serif text-theme-accent font-bold">{formatCurrency(subtotal)}</span>
+            <div className="flex justify-between items-end mb-5">
+              <span className="text-theme-text-muted font-semibold uppercase tracking-widest text-xs mb-1">Subtotal</span>
+              <span className="text-3xl font-serif text-theme-accent font-bold leading-none">{formatCurrency(subtotal)}</span>
             </div>
             <button 
               onClick={() => setIsCartOpen(false)}
-              className="w-full bg-theme-accent text-white py-4 rounded-2xl font-semibold tracking-wide transition-all duration-150 flex items-center justify-center space-x-2 shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)] hover:bg-opacity-90 text-lg active:scale-[0.98]"
+              className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-semibold tracking-wide transition-all duration-150 flex items-center justify-center space-x-2 shadow-[0_8px_20px_rgba(37,211,102,0.25)] hover:shadow-[0_8px_30px_rgba(37,211,102,0.35)] hover:bg-[#20bd5a] text-lg active:scale-[0.98]"
             >
-              <span>Mostrar ao Garçom</span>
+              <MessageSquare size={20} className="mr-1" />
+              <span>Finalizar Pedido</span>
             </button>
           </div>
         </div>
+        
+        <ProductModal 
+          product={selectedProduct}
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          reviews={selectedProduct ? (reviews[selectedProduct.nome] || []) : []}
+          onAddReview={(review) => handleAddReview(selectedProduct.nome, review)}
+          onAddToCart={(variacao) => addToCart(selectedProduct, variacao)}
+        />
     </div>
   );
 }

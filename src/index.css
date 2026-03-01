@@ -30,6 +30,19 @@
   --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
+.dark {
+  --bg: #121212;
+  --text: #F3F4F6;
+  --text-muted: #9CA3AF;
+  --accent: #E11D48; /* Rose-600 */
+  --card: #1F2937; /* Gray-800 */
+  --border: #374151; /* Gray-700 */
+  --nav: rgba(18, 18, 18, 0.85);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
 .theme-sophisticated {
   --bg: #050203;
   --text: #f4e6e8;
