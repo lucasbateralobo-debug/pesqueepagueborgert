@@ -1,143 +1,34 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search, MessageSquare, Info, Moon, Sun, Calendar, Users, ShoppingBag } from 'lucide-react';
+import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search, MessageSquare, Info, Moon, Sun, Calendar, Users, ShoppingBag, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
 
-const comidas = [
-  {
-    subcategoria: "Porções",
-    itens: [
-      { nome: "Porção de batata", desc: "Batatas fritas crocantes e douradas", ingredientes: ["Batata", "Sal", "Óleo vegetal"], preco: 25.90, popular: true, imagem: "https://picsum.photos/seed/fries/400/400", tags: ["vegetariano", "fritura"] },
-      { nome: "Porção de filé de tilápia", desc: "Filés frescos empanados e fritos", ingredientes: ["Filé de tilápia", "Farinha de trigo", "Ovo", "Farinha de rosca", "Limão", "Sal"], preco: 45.90, popular: true, imagem: "https://picsum.photos/seed/friedfish/400/400", tags: ["frutos do mar", "fritura"] },
-      { nome: "Porção de posta de tilápia", desc: "Postas suculentas com tempero da casa", ingredientes: ["Posta de tilápia", "Alho", "Limão", "Sal", "Ervas finas"], preco: 39.90, imagem: "https://picsum.photos/seed/fishsteak/400/400", tags: ["frutos do mar"] },
-      { nome: "Porção de bolinho de tilápia com queijo", desc: "Bolinhos artesanais recheados com queijo derretido", ingredientes: ["Tilápia desfiada", "Queijo muçarela", "Batata", "Cebola", "Salsa", "Farinha de rosca"], preco: 35.90, popular: true, imagem: "https://picsum.photos/seed/fishcake/400/400", tags: ["frutos do mar", "fritura", "queijo"] },
-      { nome: "Porção de camarão alho e óleo", desc: "Camarões salteados no azeite e alho", ingredientes: ["Camarão", "Alho", "Azeite de oliva", "Sal", "Salsa"], preco: 55.90, popular: true, imagem: "https://picsum.photos/seed/shrimp/400/400", tags: ["frutos do mar"] }
-    ]
-  },
-  {
-    subcategoria: "Acompanhamentos",
-    itens: [
-      { nome: "Porção de salada", desc: "Mix de folhas frescas, tomate e cebola", preco: 15.90, imagem: "https://picsum.photos/seed/salad/400/400", tags: ["vegetariano", "saudável"] },
-      { nome: "Porção de arroz", desc: "Arroz branco soltinho", preco: 12.90, imagem: "https://picsum.photos/seed/rice/400/400", tags: ["vegetariano"] },
-      { nome: "Porção de pirão de peixe", desc: "Pirão tradicional cremoso e saboroso", preco: 18.90, imagem: "https://picsum.photos/seed/stew/400/400", tags: ["frutos do mar"] }
-    ]
-  }
-];
+import Admin from './Admin';
 
-const bebidas = [
-  {
-    subcategoria: "Energéticos",
-    itens: [
-      { nome: "Red Bull", preco: 15.00, desc: "Lata 250ml", imagem: "https://picsum.photos/seed/energy1/400/400", tags: ["sem álcool", "energético"] },
-      { nome: "Monster", preco: 18.00, desc: "Lata 473ml", imagem: "https://picsum.photos/seed/energy2/400/400", tags: ["sem álcool", "energético"] }
-    ]
-  },
-  {
-    subcategoria: "Refrigerantes",
-    itens: [
-      { 
-        nome: "Refrigerante Lata", 
-        preco: 7.00, 
-        desc: "Lata 350ml. Escolha o sabor.", 
-        imagem: "https://picsum.photos/seed/soda1/400/400", 
-        tags: ["sem álcool", "gaseificado"],
-        variacoes: [
-          { nome: "Coca-Cola", imagem: "https://picsum.photos/seed/coke/400/400" },
-          { nome: "Coca-Cola Zero Açúcar", imagem: "https://picsum.photos/seed/cokezero/400/400" },
-          { nome: "Pepsi", imagem: "https://picsum.photos/seed/pepsi/400/400" },
-          { nome: "Soda Limão", imagem: "https://picsum.photos/seed/soda/400/400" },
-          { nome: "Fanta Laranja", imagem: "https://picsum.photos/seed/fanta/400/400" },
-          { nome: "Sukita Uva", imagem: "https://picsum.photos/seed/sukita/400/400" },
-          { nome: "Guaraná", imagem: "https://picsum.photos/seed/guarana/400/400" },
-          { nome: "Guaraná Zero", imagem: "https://picsum.photos/seed/guaranazero/400/400" },
-          { nome: "Água Tônica", imagem: "https://picsum.photos/seed/tonica/400/400" },
-          { nome: "Água Tônica Zero", imagem: "https://picsum.photos/seed/tonicazero/400/400" }
-        ]
-      },
-      { 
-        nome: "Refrigerante 1L", 
-        preco: 12.00, 
-        desc: "Garrafa 1L. Escolha o sabor.", 
-        imagem: "https://picsum.photos/seed/soda2/400/400", 
-        tags: ["sem álcool", "gaseificado"],
-        variacoes: [
-          { nome: "Água da Serra Laranjinha", imagem: "https://picsum.photos/seed/laranjinha/400/400" },
-          { nome: "Água da Serra Framboesa", imagem: "https://picsum.photos/seed/framboesa/400/400" },
-          { nome: "Água da Serra Limão", imagem: "https://picsum.photos/seed/limao/400/400" },
-          { nome: "Água da Serra Guaraná", imagem: "https://picsum.photos/seed/guarana1l/400/400" }
-        ]
-      }
-    ]
-  },
-  {
-    subcategoria: "Sucos",
-    itens: [
-      { nome: "Suco Natural de Laranja", preco: 12.00, desc: "Copo 400ml feito na hora", imagem: "https://picsum.photos/seed/orangejuice/400/400", tags: ["sem álcool", "natural", "saudável"] },
-      { nome: "Suco de Polpa (Copo)", preco: 10.00, desc: "Copo 400ml - Consulte sabores (ex: morango, abacaxi)", imagem: "https://picsum.photos/seed/fruitjuice1/400/400", tags: ["sem álcool", "com morango", "com abacaxi"] },
-      { nome: "Suco de Polpa (Jarra)", preco: 22.00, desc: "Jarra 1L - Consulte sabores", imagem: "https://picsum.photos/seed/fruitjuice2/400/400", tags: ["sem álcool", "com morango", "com abacaxi"] }
-    ]
-  },
-  {
-    subcategoria: "Vinhos",
-    itens: [
-      { nome: "Cabernet Sauvignon Reserva", preco: 120.00, desc: "Vinho tinto encorpado com notas de frutas vermelhas e especiarias. Chile.", imagem: "https://picsum.photos/seed/winecabernet/400/400", tags: ["com álcool", "vinho", "tinto"] },
-      { nome: "Malbec Argentino", preco: 145.00, desc: "Aromas intensos de ameixa e baunilha, taninos macios. Mendoza, Argentina.", popular: true, imagem: "https://picsum.photos/seed/winemalbec/400/400", tags: ["com álcool", "vinho", "tinto"] },
-      { nome: "Chardonnay Classic", preco: 95.00, desc: "Vinho branco fresco com toques cítricos e final amanteigado.", imagem: "https://picsum.photos/seed/winechardonnay/400/400", tags: ["com álcool", "vinho", "branco"] },
-      { nome: "Pinot Noir Suave", preco: 110.00, desc: "Leve e elegante, com notas de cereja e morango. Ideal para frutos do mar.", imagem: "https://picsum.photos/seed/winepinot/400/400", tags: ["com álcool", "vinho", "tinto"] },
-      { nome: "Sauvignon Blanc", preco: 85.00, desc: "Branco refrescante, com aromas herbáceos e acidez vibrante.", imagem: "https://picsum.photos/seed/winesauvignon/400/400", tags: ["com álcool", "vinho", "branco"] },
-      { nome: "Espumante Brut", preco: 130.00, desc: "Perlage fina e persistente, notas de maçã verde e pão tostado.", imagem: "https://picsum.photos/seed/wineespumante/400/400", tags: ["com álcool", "vinho", "espumante"] }
-    ]
-  },
-  {
-    subcategoria: "Água",
-    itens: [
-      { nome: "Água Mineral sem Gás", preco: 5.00, desc: "Garrafa 500ml", imagem: "https://picsum.photos/seed/water1/400/400", tags: ["sem álcool", "saudável"] },
-      { nome: "Água Mineral com Gás", preco: 5.50, desc: "Garrafa 500ml", imagem: "https://picsum.photos/seed/water2/400/400", tags: ["sem álcool", "gaseificado"] }
-    ]
-  },
-  {
-    subcategoria: "Cervejas",
-    itens: [
-      { nome: "Heineken 600ml", preco: 18.90, desc: "Garrafa 600ml bem gelada", popular: true, imagem: "https://picsum.photos/seed/beer1/400/400", tags: ["com álcool", "cerveja"] },
-      { nome: "Original 600ml", preco: 16.90, desc: "Garrafa 600ml bem gelada", imagem: "https://picsum.photos/seed/beer2/400/400", tags: ["com álcool", "cerveja"] },
-      { nome: "Brahma Chopp 600ml", preco: 15.90, desc: "Garrafa 600ml bem gelada", imagem: "https://picsum.photos/seed/beer3/400/400", tags: ["com álcool", "cerveja"] }
-    ]
-  },
-  {
-    subcategoria: "Doses",
-    itens: [
-      { nome: "Cachaça Artesanal", preco: 8.00, desc: "Dose 50ml", imagem: "https://picsum.photos/seed/shot1/400/400", tags: ["com álcool", "destilado"] },
-      { nome: "Vodka", preco: 12.00, desc: "Dose 50ml", imagem: "https://picsum.photos/seed/shot2/400/400", tags: ["com álcool", "destilado"] },
-      { nome: "Whisky", preco: 18.00, desc: "Dose 50ml", imagem: "https://picsum.photos/seed/shot3/400/400", tags: ["com álcool", "destilado"] }
-    ]
-  },
-  {
-    subcategoria: "Combo de bebidas",
-    itens: [
-      { nome: "Combo Vodka + Energéticos", preco: 180.00, desc: "1 Garrafa de Vodka + 4 Red Bulls", popular: true, imagem: "https://picsum.photos/seed/combo1/400/400", tags: ["com álcool", "destilado", "energético"] },
-      { nome: "Combo Whisky + Energéticos", preco: 250.00, desc: "1 Garrafa de Whisky + 4 Red Bulls", imagem: "https://picsum.photos/seed/combo2/400/400", tags: ["com álcool", "destilado", "energético"] }
-    ]
-  },
-  {
-    subcategoria: "Caipiras",
-    itens: [
-      { nome: "Caipirinha de Limão", preco: 22.00, desc: "Cachaça, limão, açúcar e gelo", popular: true, imagem: "https://picsum.photos/seed/caipirinha1/400/400", tags: ["com álcool", "com limão", "destilado"] },
-      { nome: "Caipiroska de Morango", preco: 26.00, desc: "Vodka, morango, açúcar e gelo", imagem: "https://picsum.photos/seed/caipirinha2/400/400", tags: ["com álcool", "com morango", "destilado"] },
-      { nome: "Caipirinha de Vinho", preco: 24.00, desc: "Vinho, limão, açúcar e gelo", imagem: "https://picsum.photos/seed/caipirinha3/400/400", tags: ["com álcool", "com limão", "vinho"] }
-    ]
-  },
-  {
-    subcategoria: "Drinks especiais",
-    itens: [
-      { nome: "Gin Tônica", preco: 32.00, desc: "Gin, água tônica, limão e especiarias", imagem: "https://picsum.photos/seed/drink1/400/400", tags: ["com álcool", "com limão", "destilado"] },
-      { nome: "Mojito", preco: 28.00, desc: "Rum, hortelã, limão e água com gás", imagem: "https://picsum.photos/seed/drink2/400/400", tags: ["com álcool", "com limão", "destilado"] },
-      { nome: "Lagoa Azul", preco: 25.00, desc: "Vodka, curaçau blue e soda", imagem: "https://picsum.photos/seed/drink3/400/400", tags: ["com álcool", "destilado"] }
-    ]
-  }
-];
+// We'll keep the categories structure but populate it from the API
+type Product = {
+  id: string;
+  nome: string;
+  desc: string;
+  preco: number;
+  imagem: string;
+  categoria: string;
+  subcategoria: string;
+  popular: boolean;
+  tags: string[];
+  ingredientes: string[];
+  variacoes: any[];
+  oculto: boolean;
+};
+
+type Category = {
+  subcategoria: string;
+  itens: Product[];
+};
+
 
 type CartItem = {
   nome: string;
@@ -176,6 +67,7 @@ const ProductModal = ({
   const [newAuthor, setNewAuthor] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedVariacao, setSelectedVariacao] = useState('');
+  const [isAdded, setIsAdded] = useState(false);
 
   // Prevent background scrolling when modal is open
   useEffect(() => {
@@ -242,10 +134,11 @@ const ProductModal = ({
           />
           
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-2xl max-h-[90vh] bg-theme-bg rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            exit={{ opacity: 0, scale: 0.9, y: 40 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-2xl max-h-[90vh] bg-theme-bg/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-theme-border/50 flex flex-col"
           >
             {/* Header / Image Area */}
             <div className="relative h-48 sm:h-64 shrink-0 bg-theme-card">
@@ -438,16 +331,42 @@ const ProductModal = ({
             {/* Footer Action */}
             {(!product.variacoes || product.variacoes.length === 0) && (
               <div className="p-4 bg-theme-card border-t border-theme-border shrink-0">
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  animate={isAdded ? { scale: [1, 1.05, 1], transition: { duration: 0.3 } } : {}}
                   onClick={() => {
+                    if (isAdded) return;
                     onAddToCart();
-                    onClose();
+                    setIsAdded(true);
+                    setTimeout(() => {
+                      setIsAdded(false);
+                      onClose();
+                    }, 1000);
                   }}
-                  className="w-full bg-theme-accent text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-theme-accent/90 active:scale-[0.98] transition-all"
+                  className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+                    isAdded 
+                      ? 'bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)]' 
+                      : 'bg-theme-accent text-white hover:bg-theme-accent/90'
+                  }`}
                 >
-                  <Plus size={18} strokeWidth={2.5} />
-                  Adicionar ao Carrinho
-                </button>
+                  {isAdded ? (
+                    <>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      >
+                        <Check size={20} strokeWidth={3} />
+                      </motion.div>
+                      <span>Adicionado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={18} strokeWidth={2.5} />
+                      <span>Adicionar ao Carrinho</span>
+                    </>
+                  )}
+                </motion.button>
               </div>
             )}
           </motion.div>
@@ -470,9 +389,10 @@ const ProductCard = React.memo(({ item, icon: Icon, onAdd, onOpenDetails, isSoph
       onOpenDetails(item);
       return;
     }
+    if (isAdded) return;
     onAdd(item);
     setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 800);
+    setTimeout(() => setIsAdded(false), 1000);
   };
 
   const toggleFlip = () => {
@@ -497,54 +417,58 @@ const ProductCard = React.memo(({ item, icon: Icon, onAdd, onOpenDetails, isSoph
       >
         {/* FRONT FACE (Info) */}
         <div 
-          className={`relative w-full h-full min-h-[200px] flex flex-col rounded-3xl bg-theme-card border ${popular ? 'border-theme-accent/30' : 'border-theme-border'} shadow-theme-card group-hover:shadow-theme-card-hover p-4 md:p-5 transition-shadow duration-300 ${isSophisticatedMode ? 'items-center text-center' : ''}`}
+          className={`relative w-full h-full min-h-[220px] flex flex-col rounded-[2rem] bg-theme-card border ${popular ? 'border-theme-accent/30' : 'border-theme-border/40'} shadow-sm group-hover:shadow-2xl group-hover:shadow-theme-accent/5 p-5 md:p-6 transition-all duration-500 overflow-hidden ${isSophisticatedMode ? 'items-center text-center' : ''}`}
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
           {popular && (
-            <div className={`absolute top-0 left-0 bg-theme-accent/10 border-b border-r border-theme-accent/20 text-theme-accent px-3 py-1.5 rounded-br-2xl rounded-tl-3xl z-10 flex items-center gap-1.5 ${isSophisticatedMode ? 'left-1/2 -translate-x-1/2 rounded-b-2xl rounded-t-none border-l' : ''}`}>
-              <Star size={12} className="fill-theme-accent" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Mais Pedido</span>
+            <div className={`absolute top-0 right-0 bg-theme-accent text-white px-4 py-1.5 rounded-bl-2xl rounded-tr-[2rem] z-10 flex items-center gap-1.5 ${isSophisticatedMode ? 'left-1/2 -translate-x-1/2 rounded-b-2xl rounded-t-none border-l' : ''}`}>
+              <Star size={10} className="fill-white" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Destaque</span>
             </div>
           )}
           
-          <div className={`flex flex-col h-full w-full ${popular ? 'pt-6' : ''}`}>
+          <div className={`flex flex-col h-full w-full`}>
             {isSophisticatedMode && (
               <div className="flex justify-center mb-4 opacity-70">
                 <Wine size={32} strokeWidth={1} />
               </div>
             )}
-            <div className={`flex ${isSophisticatedMode ? 'justify-center' : 'justify-between'} items-start mb-2 gap-2`}>
-              <h3 className={`text-base md:text-lg font-semibold text-theme-text leading-tight group-hover:text-theme-accent transition-colors duration-300 ${isSophisticatedMode ? 'font-serif text-xl' : ''}`}>
+            <div className={`flex ${isSophisticatedMode ? 'justify-center' : 'justify-between'} items-start mb-3 gap-2`}>
+              <h3 className={`text-lg md:text-xl font-bold text-theme-text leading-tight group-hover:text-theme-accent transition-colors duration-300 ${isSophisticatedMode ? 'font-serif text-2xl' : ''}`}>
                 {nome}
               </h3>
             </div>
             
-            <span className={`text-theme-accent font-bold font-serif text-lg md:text-xl mb-2 ${isSophisticatedMode ? 'text-2xl my-2' : ''}`}>{formatCurrency(preco)}</span>
+            <span className={`text-theme-accent font-bold font-serif text-xl md:text-2xl mb-3 ${isSophisticatedMode ? 'text-3xl my-3' : ''}`}>{formatCurrency(preco)}</span>
             
             {desc && (
-              <p className={`text-xs md:text-sm text-theme-text-muted italic leading-relaxed flex-1 ${isSophisticatedMode ? 'font-serif' : ''}`}>{desc}</p>
+              <p className={`text-xs md:text-sm text-theme-text-muted font-medium leading-relaxed flex-1 opacity-80 ${isSophisticatedMode ? 'font-serif' : ''}`}>{desc}</p>
             )}
             
-            <div className={`flex ${isSophisticatedMode ? 'justify-center' : 'justify-end'} items-center mt-auto pt-4 gap-2`}>
+            <div className={`flex ${isSophisticatedMode ? 'justify-center' : 'justify-between'} items-center mt-6 gap-3`}>
               <div 
                 onClick={(e) => { e.stopPropagation(); onOpenDetails(item); }}
-                className={`flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-xl transition-all duration-100 bg-theme-accent/10 text-theme-accent hover:bg-theme-accent hover:text-white active:scale-95 ${isSophisticatedMode ? 'rounded-full' : ''}`}
-                title="Detalhes e Avaliações"
+                className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 bg-theme-border/5 text-theme-text-muted hover:bg-theme-accent hover:text-white active:scale-90`}
+                title="Detalhes"
               >
                 <Info size={18} strokeWidth={2.5} />
               </div>
               <motion.div 
-                whileTap={{ scale: 0.85 }}
-                animate={isAdded ? { scale: [1, 1.15, 1], transition: { duration: 0.3 } } : {}}
+                whileTap={{ scale: 0.9 }}
+                animate={isAdded ? { scale: [1, 1.1, 1] } : {}}
                 onClick={handleAdd}
-                className={`flex items-center gap-1.5 font-medium text-xs md:text-sm px-3.5 py-2 md:py-2.5 rounded-xl transition-all duration-100 cursor-pointer ${
+                className={`flex-1 flex items-center justify-center gap-2 font-bold text-xs md:text-sm px-6 py-3 rounded-full transition-all duration-300 cursor-pointer ${
                   isAdded 
-                    ? 'bg-theme-accent text-white' 
-                    : 'bg-theme-accent/10 text-theme-accent hover:bg-theme-accent hover:text-white'
-                } ${isSophisticatedMode ? 'rounded-full px-6 uppercase tracking-widest text-[10px]' : ''}`}
+                    ? 'bg-green-500 text-white shadow-xl shadow-green-500/20' 
+                    : 'bg-theme-text text-theme-bg hover:bg-theme-accent hover:text-white shadow-lg shadow-theme-text/5'
+                } ${isSophisticatedMode ? 'rounded-full uppercase tracking-widest text-[10px]' : ''}`}
               >
-                {isAdded ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
-                <span>{isAdded ? 'Adicionado' : 'Adicionar'}</span>
+                {isAdded ? (
+                  <Check size={18} strokeWidth={3} />
+                ) : (
+                  <Plus size={18} strokeWidth={2.5} />
+                )}
+                <span>{isAdded ? 'Feito' : 'Pedir'}</span>
               </motion.div>
             </div>
           </div>
@@ -568,7 +492,7 @@ const ProductCard = React.memo(({ item, icon: Icon, onAdd, onOpenDetails, isSoph
                   </div>
                 )}
                 <img 
-                  src={`${imagem}.webp`} 
+                  src={imagem} 
                   alt={nome} 
                   className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`} 
                   referrerPolicy="no-referrer" 
@@ -603,11 +527,21 @@ const ProductCard = React.memo(({ item, icon: Icon, onAdd, onOpenDetails, isSoph
                 onClick={handleAdd}
                 className={`flex items-center gap-1.5 font-medium text-xs md:text-sm px-5 py-2.5 transition-all duration-100 shadow-md backdrop-blur-md cursor-pointer ${
                   isAdded 
-                    ? 'bg-theme-accent text-white' 
+                    ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]' 
                     : 'bg-theme-bg/90 text-theme-accent hover:bg-theme-accent hover:text-white'
                 } ${isSophisticatedMode ? 'rounded-full uppercase tracking-widest text-[10px]' : 'rounded-xl'}`}
               >
-                {isAdded ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
+                {isAdded ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <Check size={16} strokeWidth={3} />
+                  </motion.div>
+                ) : (
+                  <Plus size={16} strokeWidth={2.5} />
+                )}
                 <span>{isAdded ? 'Adicionado' : 'Adicionar'}</span>
               </motion.div>
             </div>
@@ -640,10 +574,17 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [comidas, setComidas] = useState<Category[]>([]);
+  const [bebidas, setBebidas] = useState<Category[]>([]);
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({
+    whatsapp: '5511999999999',
+    max_reservations: '20'
+  });
+  const [showAdmin, setShowAdmin] = useState(false);
   const [activeCategory, setActiveCategory] = useState<MainCategory>('comidas');
-  const [activeSubcategory, setActiveSubcategory] = useState<string>(comidas[0].subcategoria);
+  const [activeSubcategory, setActiveSubcategory] = useState<string>('');
   const [cartPulse, setCartPulse] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
@@ -663,6 +604,7 @@ export default function App() {
   });
   const [reservationError, setReservationError] = useState('');
   const [reservationSuccess, setReservationSuccess] = useState(false);
+  const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
 
   const availableDates = useMemo(() => {
     const dates = [];
@@ -756,8 +698,9 @@ export default function App() {
       return;
     }
 
-    if (quantity > 20) {
-      setReservationError('Para reservas acima de 20 pessoas, por favor entre em contato via WhatsApp de eventos.');
+    const maxRes = parseInt(siteSettings.max_reservations || '20', 10);
+    if (quantity > maxRes) {
+      setReservationError(`Para reservas acima de ${maxRes} pessoas, por favor entre em contato via WhatsApp de eventos.`);
       return;
     }
 
@@ -772,7 +715,7 @@ export default function App() {
     setReservationSuccess(true);
     
     setTimeout(() => {
-      window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(text)}`, '_blank');
+      window.open(`https://wa.me/${siteSettings.whatsapp}?text=${encodeURIComponent(text)}`, '_blank');
       setIsReservationModalOpen(false);
       setReservationSuccess(false);
       setReservationForm({ data: '', hora: '', nome: '', quantidade: '', obs: '' });
@@ -792,21 +735,59 @@ export default function App() {
     localStorage.setItem('borgert_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Fetch reviews from server
+  // Fetch data from server
   useEffect(() => {
-    const fetchReviews = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch('/api/reviews');
-        if (response.ok) {
-          const data = await response.json();
-          setReviews(data);
+        const [productsRes, settingsRes, reviewsRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/settings'),
+          fetch('/api/reviews')
+        ]);
+
+        if (productsRes.ok && settingsRes.ok) {
+          const products: Product[] = await productsRes.json();
+          const settings = await settingsRes.json();
+          
+          setSiteSettings(settings);
+
+          // Group products by category and subcategory
+          const visibleProducts = products.filter(p => !p.oculto);
+          
+          const processCategory = (cat: string) => {
+            const grouped: Record<string, Product[]> = {};
+            visibleProducts.filter(p => p.categoria === cat).forEach(p => {
+              if (!grouped[p.subcategoria]) grouped[p.subcategoria] = [];
+              grouped[p.subcategoria].push(p);
+            });
+            return Object.entries(grouped).map(([sub, itens]) => ({ subcategoria: sub, itens }));
+          };
+
+          const newComidas = processCategory('comidas');
+          const newBebidas = processCategory('bebidas');
+
+          setComidas(newComidas);
+          setBebidas(newBebidas);
+
+          if (!activeSubcategory) {
+            if (activeCategory === 'comidas' && newComidas.length > 0) setActiveSubcategory(newComidas[0].subcategoria);
+            else if (activeCategory === 'bebidas' && newBebidas.length > 0) setActiveSubcategory(newBebidas[0].subcategoria);
+          }
+        }
+        
+        if (reviewsRes.ok) {
+          setReviews(await reviewsRes.json());
         }
       } catch (error) {
-        console.error('Failed to fetch reviews:', error);
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchReviews();
-  }, []);
+    fetchData();
+  }, [showAdmin]); // Refetch when returning from admin
+
 
   const handleAddReview = React.useCallback(async (productName: string, review: Omit<Review, 'id' | 'date'>) => {
     try {
@@ -835,17 +816,21 @@ export default function App() {
 
   // Handle category switching with skeleton loading
   const handleCategoryChange = React.useCallback((category: MainCategory) => {
-    setActiveCategory((prev) => {
-      if (category === prev) return prev;
-      setIsLoading(true);
-      setActiveSubcategory(category === 'comidas' ? comidas[0].subcategoria : bebidas[0].subcategoria);
-      setSearchQuery("");
-      setSelectedTags([]);
-      setTimeout(() => setIsLoading(false), 300);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return category;
-    });
-  }, []);
+    setActiveCategory(category);
+    setIsLoading(true);
+    
+    // Safety check to set initial subcategory
+    if (category === 'comidas' && comidas.length > 0) {
+      setActiveSubcategory(comidas[0].subcategoria);
+    } else if (category === 'bebidas' && bebidas.length > 0) {
+      setActiveSubcategory(bebidas[0].subcategoria);
+    }
+    
+    setSearchQuery("");
+    setSelectedTags([]);
+    setTimeout(() => setIsLoading(false), 300);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [comidas, bebidas]);
 
   // Handle subcategory switching with skeleton loading
   const handleSubcategoryChange = React.useCallback((subcat: string) => {
@@ -858,6 +843,17 @@ export default function App() {
       return subcat;
     });
   }, []);
+
+  // Ensure activeSubcategory is valid for the active category
+  useEffect(() => {
+    if (activeCategory === 'comidas' && comidas.length > 0) {
+      const exists = comidas.some(c => c.subcategoria === activeSubcategory);
+      if (!exists && comidas[0]) setActiveSubcategory(comidas[0].subcategoria);
+    } else if (activeCategory === 'bebidas' && bebidas.length > 0) {
+      const exists = bebidas.some(b => b.subcategoria === activeSubcategory);
+      if (!exists && bebidas[0]) setActiveSubcategory(bebidas[0].subcategoria);
+    }
+  }, [activeCategory, comidas, bebidas, activeSubcategory]);
 
   // Prevent background scrolling when cart is open on mobile
   useEffect(() => {
@@ -916,7 +912,7 @@ export default function App() {
       ...comidas.flatMap(c => c.itens.map(i => ({ ...i, category: 'comidas', subcategoria: c.subcategoria, icon: UtensilsCrossed }))),
       ...bebidas.flatMap(b => b.itens.map(i => ({ ...i, category: 'bebidas', subcategoria: b.subcategoria, icon: Wine })))
     ];
-  }, []);
+  }, [comidas, bebidas]);
 
   const availableTags = useMemo(() => {
     const itemsToConsider = searchQuery.trim() ? allItems : currentSectionItems;
@@ -965,14 +961,32 @@ export default function App() {
     return results;
   }, [searchQuery, allItems, selectedTags]);
 
+  if (showAdmin) {
+    return <Admin onBack={() => setShowAdmin(false)} />;
+  }
+
   return (
-    <div className={`min-h-screen bg-theme-bg text-theme-text ${isSophisticatedMode ? 'font-serif' : 'font-sans'} selection:bg-theme-accent selection:text-white relative flex flex-col w-full overflow-x-hidden transition-colors duration-300 ${isSophisticatedMode ? 'theme-sophisticated' : ''}`}>
+    <div className={`min-h-screen bg-theme-bg text-theme-text ${isSophisticatedMode ? 'font-serif' : 'font-sans'} selection:bg-theme-accent selection:text-white relative flex flex-col w-full overflow-x-hidden transition-colors duration-500 ${isSophisticatedMode ? 'theme-sophisticated' : ''}`} style={{ backgroundImage: 'radial-gradient(circle at top right, var(--color-theme-accent)/0.03, transparent 40%)' }}>
       {/* Header */}
-      <header className="safe-pt pb-6 flex flex-col items-center justify-center text-center px-4 shrink-0 relative">
+      <header className="safe-pt pb-12 flex flex-col items-center justify-center text-center px-4 shrink-0 relative overflow-hidden">
+        {/* Animated Background Glow */}
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-32 -left-32 w-96 h-96 bg-theme-accent/20 rounded-full blur-[120px] pointer-events-none"
+        />
+        
         <div className="absolute top-0 right-0 p-4 md:p-8 safe-pt w-full flex justify-end gap-3 pointer-events-none">
           <button
+            onClick={() => setShowAdmin(true)}
+            className="pointer-events-auto p-2.5 rounded-full bg-theme-card/80 backdrop-blur-xl border border-theme-border/50 text-theme-text-muted hover:text-theme-accent hover:border-theme-accent/50 transition-all duration-300 shadow-xl shadow-black/5 z-20"
+            aria-label="Admin"
+          >
+            <Settings size={20} />
+          </button>
+          <button
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className="pointer-events-auto p-2.5 rounded-full bg-theme-card border border-theme-border text-theme-text-muted hover:text-theme-accent hover:border-theme-accent/50 transition-all duration-200 shadow-sm z-20"
+            className="pointer-events-auto p-2.5 rounded-full bg-theme-card/80 backdrop-blur-xl border border-theme-border/50 text-theme-text-muted hover:text-theme-accent hover:border-theme-accent/50 transition-all duration-300 shadow-xl shadow-black/5 z-20"
             aria-label="Toggle Dark Mode"
           >
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -980,23 +994,13 @@ export default function App() {
           
           {totalItems > 0 && (
             <motion.button
-              animate={{ 
-                scale: cartPulse ? [1, 1.15, 1] : 1,
-              }}
+              animate={{ scale: cartPulse ? [1, 1.15, 1] : 1 }}
               transition={{ duration: 0.3 }}
               onClick={() => setIsCartOpen(true)}
-              className="pointer-events-auto relative p-2.5 rounded-full bg-theme-card border border-theme-border text-theme-text-muted hover:text-theme-accent hover:border-theme-accent/50 transition-all duration-200 shadow-sm z-20"
+              className="pointer-events-auto relative p-2.5 rounded-full bg-theme-card/80 backdrop-blur-xl border border-theme-border/50 text-theme-text-muted hover:text-theme-accent hover:border-theme-accent/50 transition-all duration-300 shadow-xl shadow-black/5 z-20"
               aria-label="Open Cart"
             >
-              <motion.div
-                animate={{ 
-                  rotate: cartPulse ? [0, -20, 20, -20, 20, 0] : 0,
-                  scale: cartPulse ? [1, 1.2, 1] : 1
-                }}
-                transition={{ duration: 0.4 }}
-              >
-                <ShoppingCart size={20} />
-              </motion.div>
+              <ShoppingCart size={20} />
               <motion.span 
                 key={totalItems}
                 initial={{ scale: 0 }}
@@ -1009,45 +1013,73 @@ export default function App() {
             </motion.button>
           )}
         </div>
-        <div className="mb-4 flex flex-col items-center">
-          <div className="relative flex items-center justify-center w-20 h-14 overflow-hidden">
-            <div className="absolute top-0 w-20 h-20 rounded-full border-t-[3px] border-l-[3px] border-r-[3px] border-theme-border border-dashed opacity-80"></div>
-            <Fish size={32} className="text-theme-accent fill-current mt-3 z-10" />
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-8 flex flex-col items-center"
+        >
+          <div className="relative flex items-center justify-center w-28 h-20 overflow-hidden">
+            <div className="absolute inset-0 rounded-full border-2 border-theme-accent/10 border-dashed animate-[spin_20s_linear_infinite]"></div>
+            <Fish size={48} className="text-theme-accent fill-current mt-4 z-10 animate-float drop-shadow-[0_10px_20px_rgba(var(--color-theme-accent),0.2)]" />
           </div>
-          <Waves size={24} className="text-theme-text -mt-1 z-10 opacity-90" strokeWidth={2.5} />
-        </div>
+          <motion.div 
+            animate={{ x: [-10, 10, -10], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Waves size={32} className="text-theme-text -mt-2 z-10 opacity-60" strokeWidth={2} />
+          </motion.div>
+        </motion.div>
         
-        <h1 className="text-3xl md:text-5xl font-bold tracking-widest text-theme-accent uppercase font-serif">
+        <motion.h1 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2, type: "spring", bounce: 0.4 }}
+          className="text-5xl md:text-8xl font-black tracking-tighter text-theme-accent uppercase font-serif"
+        >
           Borgert
-        </h1>
-        <p className="mt-2 text-[9px] md:text-xs tracking-[0.3em] text-theme-text uppercase font-medium opacity-90">
-          Buffet | Restaurante | Eventos
-        </p>
+        </motion.h1>
+        <motion.div 
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.2, delay: 0.5, ease: "circOut" }}
+          className="h-[4px] bg-gradient-to-r from-transparent via-theme-accent/30 to-transparent w-32 my-6 rounded-full"
+        />
+        <motion.p 
+          initial={{ opacity: 0, letterSpacing: '0.1em' }}
+          animate={{ opacity: 1, letterSpacing: '0.5em' }}
+          transition={{ duration: 1.5, delay: 0.7 }}
+          className="text-xs md:text-base text-theme-text-muted uppercase font-bold"
+        >
+          Buffet • Restaurante • Eventos
+        </motion.p>
       </header>
 
       {/* Main Category Navigation */}
-      <div className="sticky top-0 z-30 bg-theme-nav backdrop-blur-md border-b border-theme-border px-4 py-3 shrink-0">
-        <div className="max-w-md mx-auto flex bg-theme-card p-1.5 rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-theme-border relative">
+      <div className="sticky top-0 z-30 bg-theme-bg/80 backdrop-blur-xl border-b border-theme-border/50 px-4 py-4 shrink-0 overflow-hidden">
+        <div className="max-w-md mx-auto flex bg-theme-card/50 p-1 rounded-full shadow-lg border border-theme-border/30 relative">
+          <motion.div 
+            layoutId="activeCategoryBg"
+            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-colors duration-500 ${activeCategory === 'comidas' ? 'left-1 bg-theme-text' : 'left-[calc(50%+3px)] bg-theme-accent'}`}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          />
           <button
             onClick={() => handleCategoryChange('comidas')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-colors duration-150 relative z-10 active:scale-[0.98] ${
-              activeCategory === 'comidas' 
-                ? 'bg-theme-text text-theme-bg shadow-md' 
-                : 'text-theme-text-muted hover:text-theme-text'
+            className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full font-bold transition-all duration-300 relative z-10 active:scale-[0.95] ${
+              activeCategory === 'comidas' ? 'text-theme-bg' : 'text-theme-text-muted hover:text-theme-text'
             }`}
           >
-            <UtensilsCrossed size={18} />
-            <span className="tracking-wide text-sm md:text-base">Comidas</span>
+            <UtensilsCrossed size={20} />
+            <span className="tracking-wide text-sm md:text-base">Cardápio</span>
           </button>
           <button
             onClick={() => handleCategoryChange('bebidas')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-colors duration-150 relative z-10 active:scale-[0.98] ${
-              activeCategory === 'bebidas' 
-                ? 'bg-theme-accent text-white shadow-md' 
-                : 'text-theme-text-muted hover:text-theme-accent'
+            className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full font-bold transition-all duration-300 relative z-10 active:scale-[0.95] ${
+              activeCategory === 'bebidas' ? 'text-theme-bg' : 'text-theme-text-muted hover:text-theme-accent'
             }`}
           >
-            <Wine size={18} />
+            <Wine size={20} />
             <span className="tracking-wide text-sm md:text-base">Bebidas</span>
           </button>
         </div>
@@ -1114,10 +1146,10 @@ export default function App() {
               {activeCategory === 'comidas' && (
                 <motion.section 
                   key="comidas"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                   className="flex flex-col h-full"
                 >
                   {/* Subcategory Navigation */}
@@ -1181,10 +1213,10 @@ export default function App() {
               {activeCategory === 'bebidas' && (
                 <motion.section 
                   key="bebidas"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                   className="flex flex-col h-full"
                 >
               {/* Subcategory Navigation */}
@@ -1285,7 +1317,7 @@ export default function App() {
                         if (option.type === 'form') {
                           setIsReservationModalOpen(true);
                         } else {
-                          window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(option.message || '')}`, '_blank');
+                          window.open(`https://wa.me/${siteSettings.whatsapp}?text=${encodeURIComponent(option.message || '')}`, '_blank');
                         }
                         setIsContactMenuOpen(false);
                       }}
@@ -1564,14 +1596,14 @@ export default function App() {
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       {item.imagem ? (
-                        <img src={`${item.imagem}.webp`} alt={item.nome} className="w-14 h-14 rounded-xl object-cover border border-theme-border/50 shrink-0" referrerPolicy="no-referrer" />
+                        <img src={item.imagem} alt={item.nome} className="w-14 h-14 rounded-xl object-cover border border-theme-border/50 shrink-0" referrerPolicy="no-referrer" />
                       ) : (
                         <div className="w-14 h-14 rounded-xl bg-theme-border/20 flex items-center justify-center shrink-0">
                           <UtensilsCrossed size={20} className="text-theme-text-muted opacity-50" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0 pr-2">
-                        <h4 className="font-semibold text-theme-text text-sm md:text-base leading-tight truncate">{item.nome}</h4>
+                        <h4 className="font-bold text-theme-text text-sm md:text-base leading-tight truncate uppercase tracking-wider">{item.nome}</h4>
                         <p className="text-theme-accent text-sm font-serif mt-1 font-medium">{formatCurrency(item.preco)}</p>
                       </div>
                     </div>
@@ -1611,12 +1643,15 @@ export default function App() {
               <span className="text-theme-text-muted font-semibold uppercase tracking-widest text-xs mb-1">Subtotal</span>
               <span className="text-3xl font-serif text-theme-accent font-bold leading-none">{formatCurrency(subtotal)}</span>
             </div>
-            <button 
-              onClick={() => setIsCartOpen(false)}
-              className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-semibold tracking-wide transition-all duration-150 flex items-center justify-center space-x-2 shadow-[0_8px_20px_rgba(37,211,102,0.25)] hover:shadow-[0_8px_30px_rgba(37,211,102,0.35)] hover:bg-[#20bd5a] text-lg active:scale-[0.98]"
+             <button 
+              onClick={() => {
+                setIsCartOpen(false);
+                setIsOrderSummaryOpen(true);
+              }}
+              className="w-full bg-theme-text text-theme-bg py-4 rounded-2xl font-bold uppercase tracking-widest transition-all duration-150 flex items-center justify-center space-x-2 shadow-lg hover:bg-theme-accent hover:text-white text-lg active:scale-[0.98]"
             >
-              <MessageSquare size={20} className="mr-1" />
-              <span>Finalizar Pedido</span>
+              <Check size={20} className="mr-1" />
+              <span>Concluir Pedido</span>
             </button>
           </div>
         </div>
@@ -1629,6 +1664,86 @@ export default function App() {
           onAddReview={(review) => handleAddReview(selectedProduct.nome, review)}
           onAddToCart={(variacao) => addToCart(selectedProduct, variacao)}
         />
+
+        {/* Order Summary Modal (Waiter Focus) */}
+        <AnimatePresence>
+          {isOrderSummaryOpen && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-theme-overlay/95 backdrop-blur-md"
+                onClick={() => setIsOrderSummaryOpen(false)}
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-lg bg-theme-card rounded-[2.5rem] shadow-2xl border border-theme-border overflow-hidden flex flex-col max-h-[90vh]"
+              >
+                <div className="p-8 border-b border-theme-border flex justify-between items-start bg-theme-bg/50">
+                  <div>
+                    <h3 className="text-2xl font-serif font-bold text-theme-text italic">Resumo do Pedido</h3>
+                    <p className="text-xs text-theme-text-muted mt-1 uppercase tracking-widest font-black opacity-60">Apresente ao garçom</p>
+                  </div>
+                  <button 
+                    onClick={() => setIsOrderSummaryOpen(false)}
+                    className="p-3 bg-theme-card hover:bg-theme-border/50 rounded-full transition-colors border border-theme-border shadow-sm active:scale-90"
+                  >
+                    <X size={24} className="text-theme-text" />
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-8 space-y-7 overscroll-contain">
+                  {cart.map((item, idx) => (
+                    <motion.div 
+                      key={idx}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="flex justify-between items-start gap-4 pb-6 border-b border-theme-border/30 last:border-0 last:pb-0"
+                    >
+                      <div className="flex-1">
+                        <h4 className="text-3xl font-black text-theme-text uppercase tracking-tighter leading-[0.9] mb-2 break-words">
+                          {item.quantidade}x {item.nome}
+                        </h4>
+                        <p className="text-theme-accent font-serif text-xl font-bold opacity-80">
+                          {formatCurrency(item.preco * item.quantidade)}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                <div className="p-8 border-t border-theme-border bg-theme-card safe-pb shrink-0 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                  <div className="flex justify-between items-end mb-8">
+                    <div className="flex flex-col">
+                      <span className="text-theme-text-muted font-bold uppercase tracking-widest text-[10px] mb-1">Total Geral</span>
+                      <span className="text-4xl font-serif text-theme-accent font-bold leading-none">{formatCurrency(subtotal)}</span>
+                    </div>
+                    <div className="text-right">
+                       <span className="text-theme-text-muted font-bold uppercase tracking-widest text-[10px] mb-1 block">Itens</span>
+                       <span className="text-2xl font-black text-theme-text">{totalItems}</span>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      setCart([]);
+                      localStorage.removeItem('borgert_cart');
+                      setIsOrderSummaryOpen(false);
+                    }}
+                    className="w-full bg-theme-text text-theme-bg py-5 rounded-[2rem] font-black uppercase tracking-widest transition-all duration-150 flex items-center justify-center space-x-3 shadow-xl hover:bg-theme-accent hover:text-white text-xl active:scale-[0.98]"
+                  >
+                    <ShoppingBag size={24} />
+                    <span>Novo Pedido</span>
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
     </div>
   );
 }
