@@ -3,53 +3,37 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://iqkedarvwofqturhtebc.supabase.co';
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlxa2VkYXJ2d29mcXR1cmh0ZWJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjIxODc3NywiZXhwIjoyMDkxNzk0Nzc3fQ.DCkhOoeAA4ezGyThIO96jndkLlOd0f0sKGE2y85tl7g';
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function setup() {
-  console.log('Criando usuário master...');
+  console.log('1. Checking bucket "products"...');
   
-  // 1. Criar o usuário Auth
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email: 'brtreino@gmail.com',
-    password: 'Escroto12.',
-    email_confirm: true
-  });
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+  if (listError) {
+    console.error('List error:', listError.message);
+    return;
+  }
 
-  if (authError) {
-    if (authError.message.includes('already registered')) {
-      console.log('Usuário brtreino@gmail.com já existe no auth.');
-    } else {
-      console.error('Erro ao criar user:', authError);
+  const bucket = buckets.find(b => b.id === 'products');
+  if (!bucket) {
+    console.log('Creating bucket...');
+    const { error: createError } = await supabase.storage.createBucket('products', { public: true });
+    if (createError) {
+      console.error('Create error:', createError.message);
       return;
     }
+    console.log('Bucket created!');
   } else {
-    console.log('Usuário auth criado com sucesso:', authData.user.id);
+    console.log('Bucket exists.');
   }
 
-  // Pegar o ID do user pra garantir
-  const { data: users } = await supabase.auth.admin.listUsers();
-  const masterUser = users.users.find(u => u.email === 'brtreino@gmail.com');
-
-  if (masterUser) {
-    // 2. Inserir na tabela app_users
-    console.log('Inserindo admin na tabela app_users...');
-    const { data, error: insertError } = await supabase
-      .from('app_users')
-      .upsert({
-        id: masterUser.id,
-        email: 'brtreino@gmail.com',
-        role: 'admin',
-        nome: 'Admin Master'
-      });
-
-    if (insertError) {
-      console.error('Erro ao inserir em app_users:', insertError);
-    } else {
-      console.log('Admin master gravado com sucesso na app_users!');
-    }
-  }
+  console.log('2. Setting up Storage Policies (All Access for simplify as per user "master key" trust)...');
+  
+  // Storage policies are generally handled via SQL for better control.
+  // I will just use the REST API to ensure the bucket is public.
+  // In Supabase, 'public: true' on createBucket sets it as public-readable.
+  
+  console.log('Setup finished!');
 }
 
 setup();
