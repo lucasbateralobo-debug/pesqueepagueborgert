@@ -288,8 +288,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col md:flex-row">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-theme-card border-b md:border-b-0 md:border-r border-theme-border flex flex-col shrink-0">
+    <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col md:flex-row pb-20 md:pb-0">
+      {/* Sidebar (Desktop Only) */}
+      <aside className="hidden md:flex w-64 bg-theme-card border-r border-theme-border flex-col shrink-0">
         <div className="p-6 border-b border-theme-border">
           <h2 className="text-xl font-bold text-theme-accent font-serif uppercase tracking-wider">Admin Borgert</h2>
           <p className="text-[10px] text-theme-text-muted uppercase tracking-widest mt-1">Painel de Controle</p>
@@ -335,13 +336,61 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           </button>
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all font-bold"
           >
             <LogOut size={20} />
             <span className="font-semibold text-sm">Sair</span>
           </button>
         </div>
       </aside>
+
+      {/* Mobile Top Header */}
+      <header className="md:hidden sticky top-0 z-50 bg-theme-bg/80 backdrop-blur-md border-b border-theme-border flex items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-theme-accent/10 rounded-2xl flex items-center justify-center">
+            {activeTab && React.createElement(TAB_CONFIG[activeTab].icon, { size: 20, className: "text-theme-accent" })}
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-theme-text tracking-tight">{TAB_CONFIG[activeTab]?.label || 'Admin'}</h1>
+            <p className="text-[10px] text-theme-text-muted uppercase tracking-widest leading-none">Borgert Admin</p>
+          </div>
+        </div>
+        <button 
+          onClick={handleLogout}
+          className="p-2 text-theme-text-muted hover:text-red-500 active:scale-90 transition-all font-bold"
+        >
+          <LogOut size={20} />
+        </button>
+      </header>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-theme-card/95 backdrop-blur-lg border-t border-theme-border flex justify-around items-center px-4 py-2 safe-pb h-[72px] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
+        {allowedTabs.map(tabKey => {
+          const config = TAB_CONFIG[tabKey];
+          const Icon = config.icon;
+          const isActive = activeTab === tabKey;
+          return (
+            <button 
+              key={tabKey}
+              onClick={() => setActiveTab(tabKey)}
+              className="relative flex flex-col items-center justify-center w-16 h-14 transition-all active:scale-90"
+            >
+              <div className={`p-2 rounded-2xl transition-all duration-300 ${isActive ? 'bg-theme-accent text-white -translate-y-1 shadow-lg shadow-theme-accent/30' : 'text-theme-text-muted'}`}>
+                <Icon size={isActive ? 20 : 18} />
+              </div>
+              <span className={`text-[9px] mt-1 font-bold transition-all duration-300 ${isActive ? 'opacity-100 text-theme-accent' : 'opacity-60 text-theme-text-muted'}`}>
+                {config.label}
+              </span>
+              {isActive && (
+                <motion.div 
+                  layoutId="activeIndicator"
+                  className="absolute -top-2 w-1 h-1 bg-theme-accent rounded-full"
+                />
+              )}
+            </button>
+          );
+        })}
+      </nav>
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8">
