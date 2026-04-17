@@ -1124,76 +1124,58 @@ export default function App() {
             if (e.detail === 3) setIsBirthdayOpen(true);
           }}
         >
-          <div className="relative w-[280px] h-[140px] flex justify-center overflow-visible">
-            <svg viewBox="0 0 200 120" className="w-full h-full overflow-visible drop-shadow-md">
+          <div className="relative w-[320px] h-[180px] flex justify-center items-center overflow-visible">
+            <svg viewBox="0 0 200 160" className="w-full h-full overflow-visible drop-shadow-sm">
               <defs>
-                <clipPath id="fish-clip">
-                  <ellipse cx="100" cy="80" rx="60" ry="35" />
-                </clipPath>
+                <pattern id="rope-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width="5" height="10" fill="#203a56" />
+                  <rect x="5" width="5" height="10" fill="#aecce1" />
+                </pattern>
+                <filter id="shadow">
+                  <feDropShadow dx="0" dy="1" stdDeviation="0.5" floodOpacity="0.2"/>
+                </filter>
               </defs>
               
-              {/* Rope Semi-Circle - Dark Blue */}
-              <path 
-                d="M 30,90 A 70,70 0 0,1 170,90" 
+              {/* Rope Semi-Circle Striped - Matches img2 exactly */}
+              <circle 
+                cx="100" cy="110" r="75" 
                 fill="none" 
-                stroke="currentColor" 
-                strokeWidth="10" 
-                strokeDasharray="6 4"
-                className="text-[#203a56] dark:text-[#6ba1d6]"
+                stroke="url(#rope-pattern)" 
+                strokeWidth="11" 
+                className="opacity-90"
+                strokeDasharray="0"
+                clipPath="inset(0 0 60% 0)"
               />
-              <path 
-                d="M 30,90 A 70,70 0 0,1 170,90" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="14"
-                strokeOpacity="0.2"
-                className="text-[#203a56] dark:text-[#6ba1d6]"
-              />
+              {/* Thin blue stroke around rope */}
+              <circle cx="100" cy="110" r="80.5" fill="none" stroke="#203a56" strokeWidth="1" clipPath="inset(0 0 60% 0)" opacity="0.4" />
+              <circle cx="100" cy="110" r="69.5" fill="none" stroke="#203a56" strokeWidth="1" clipPath="inset(0 0 60% 0)" opacity="0.4" />
 
-              {/* Solid Red Fish */}
-              <g transform="translate(65, 45) scale(0.6)">
-                <path 
-                  d="M 85.3,16 C 60,16 35,30 20,45 L -10,15 C -5,35 -5,55 -10,75 L 20,45 C 35,60 60,74 85.3,74 C 115,74 130,55 130,45 C 130,35 115,16 85.3,16 Z" 
-                  className="fill-[#ce1f21]"
-                />
-                <circle cx="110" cy="35" r="4" fill="white" />
+              {/* Jumping Fish - Refined silhouette matching img2 */}
+              <g transform="translate(68, 55) scale(0.68)">
+                 <path 
+                   d="M 120,40 C 120,50 110,70 85,75 C 60,80 35,70 15,45 C 5,60 -10,65 -25,60 C -15,45 -10,25 -25,10 C -10,5 5,10 15,25 C 35,10 60,5 85,15 C 110,25 120,30 120,40 Z" 
+                   fill="#911111" 
+                 />
+                 <circle cx="102" cy="32" r="3.2" fill="white" />
               </g>
 
-              {/* Dark Blue Waves */}
-              <path 
-                d="M 10,95 Q 25,85 40,95 T 70,95 T 100,95 T 130,95 T 160,95 T 190,95" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="4.5" 
-                strokeLinecap="round"
-                className="text-[#203a56] dark:text-[#6ba1d6]"
-              />
-              <path 
-                d="M 15,107 Q 30,97 45,107 T 75,107 T 105,107 T 135,107 T 165,107 T 185,107" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="4.5" 
-                strokeLinecap="round"
-                className="text-[#203a56] dark:text-[#6ba1d6]"
-              />
+              {/* Three Navy Waves (Layered as img2) */}
+              <path d="M 10,105 Q 32,90 55,105 T 100,105 T 145,105 T 190,105" fill="none" stroke="#132a47" strokeWidth="4.5" strokeLinejoin="round" />
+              <path d="M 8,112 Q 31,102 54,117 T 100,117 T 146,117 T 192,117" fill="none" stroke="#1c3652" strokeWidth="4.5" strokeLinejoin="round" />
+              <path d="M 12,122 Q 35,115 58,125 T 100,125 T 142,125 T 188,125" fill="none" stroke="#203a56" strokeWidth="4.5" strokeLinejoin="round" />
+
+              {/* Brand Text BORGERT in Maroon Serif */}
+              <text x="50%" y="152" textAnchor="middle" fill="#911111" className="text-[34px] font-bold tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                BORGERT
+              </text>
             </svg>
           </div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2, type: "spring", bounce: 0.4 }}
-            className="text-6xl md:text-[5.5rem] mt-4 font-black tracking-tighter text-[#ce1f21] uppercase"
-            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-          >
-            Borgert
-          </motion.h1>
           
           <motion.p 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.5, delay: 0.5 }}
-            className="text-sm md:text-lg text-[#203a56] dark:text-[#6ba1d6] font-semibold tracking-[0.2em] md:tracking-[0.3em] uppercase mt-1"
+            className="text-[11px] md:text-sm text-[#203a56] font-bold tracking-[0.14em] md:tracking-[0.2em] uppercase mt-2 border-t border-[#203a56]/10 pt-1"
           >
             Buffet | Restaurante | Eventos
           </motion.p>
