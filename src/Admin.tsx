@@ -702,7 +702,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                     };
 
                     const addItem = () => {
-                      const newList = [...birthdayItems, { nome: '', desc: '', imagem: '' }];
+                      const newList = [...birthdayItems, { nome: '', desc: '', preco: 0, imagem: '' }];
                       setSettings({...settings, birthday_items: JSON.stringify(newList)});
                     };
 
@@ -742,13 +742,22 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                                     placeholder="Descrição (Ex: Ideal para 5 pessoas)"
                                     className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-sm"
                                   />
-                                  <input 
-                                    type="text" 
-                                    value={item.imagem}
-                                    onChange={(e) => updateItem(index, 'imagem', e.target.value)}
-                                    placeholder="URL da Imagem"
-                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-xs"
-                                  />
+                                  <div className="flex gap-3">
+                                    <input 
+                                      type="number" 
+                                      value={item.preco}
+                                      onChange={(e) => updateItem(index, 'preco', e.target.value)}
+                                      placeholder="Preço (Ex: 45.90)"
+                                      className="w-1/3 bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-sm"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={item.imagem}
+                                      onChange={(e) => updateItem(index, 'imagem', e.target.value)}
+                                      placeholder="URL da Imagem"
+                                      className="flex-1 bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-xs"
+                                    />
+                                  </div>
                                 </div>
                                 <button 
                                   onClick={() => removeItem(index)}

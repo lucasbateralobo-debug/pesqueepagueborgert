@@ -1516,38 +1516,31 @@ export default function App() {
                   Peça o seu item de parabéns:
                 </h3>
                 
-                <div className="grid grid-cols-1 gap-3 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                   {(() => {
                     try {
                       const items = JSON.parse(siteSettings.birthday_items);
                       if (items.length === 0) return (
-                        <div className="p-8 text-center bg-theme-card border border-theme-border rounded-2xl italic text-theme-text-muted text-sm">
+                        <div className="col-span-full p-8 text-center bg-theme-card border border-theme-border rounded-2xl italic text-theme-text-muted text-sm">
                           O garçom já está vindo com a alegria! 🎂
                         </div>
                       );
                       return items.map((item: any, idx: number) => (
-                        <motion.button
-                          key={idx}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => {
-                            const text = `*🎂 PEDIDO DE ANIVERSÁRIO*\nQuero pedir: *${item.nome}* para o parabéns na minha mesa!`;
-                            window.open(`https://wa.me/${parsedWhatsappList[0]?.numero}?text=${encodeURIComponent(text)}`, '_blank');
-                          }}
-                          className="flex items-center gap-4 p-4 bg-theme-card border border-theme-border rounded-2xl hover:border-theme-accent transition-all text-left group"
-                        >
-                          {item.imagem ? (
-                            <img src={item.imagem} className="w-16 h-16 rounded-xl object-cover" />
-                          ) : (
-                            <div className="w-16 h-16 bg-theme-bg rounded-xl flex items-center justify-center text-theme-text-muted">
-                              <Gift size={24} />
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <p className="font-bold text-theme-text">{item.nome}</p>
-                            <p className="text-xs text-theme-text-muted line-clamp-2">{item.desc}</p>
-                          </div>
-                          <ChevronRight size={16} className="text-theme-text-muted group-hover:text-theme-accent transition-colors" />
-                        </motion.button>
+                        <div key={idx} className="h-full">
+                          <ProductCard 
+                            item={{...item, preco: item.preco || 0}} 
+                            icon={Cake} 
+                            index={idx}
+                            onAdd={() => {
+                              const text = `*🎂 PEDIDO DE ANIVERSÁRIO*\nQuero pedir: *${item.nome}* (${formatCurrency(item.preco || 0)}) para o parabéns na minha mesa!`;
+                              window.open(`https://wa.me/${parsedWhatsappList[0]?.numero}?text=${encodeURIComponent(text)}`, '_blank');
+                            }}
+                            onOpenDetails={() => {
+                              const text = `*🎂 PEDIDO DE ANIVERSÁRIO*\nQuero pedir: *${item.nome}* (${formatCurrency(item.preco || 0)}) para o parabéns na minha mesa!`;
+                              window.open(`https://wa.me/${parsedWhatsappList[0]?.numero}?text=${encodeURIComponent(text)}`, '_blank');
+                            }}
+                          />
+                        </div>
                       ));
                     } catch { return null; }
                   })()}
