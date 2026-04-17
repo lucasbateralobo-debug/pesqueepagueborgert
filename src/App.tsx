@@ -184,7 +184,7 @@ const ProductModal = ({
             <div className="flex-1 overflow-y-auto p-6">
               {product.desc && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-bold text-theme-text uppercase tracking-wider mb-2">Descrição</h3>
+                  <h3 className="text-sm font-bold text-theme-text uppercase tracking-wider mb-2">DescriÃ§Ã£o</h3>
                   <p className="text-theme-text-muted leading-relaxed">{product.desc}</p>
                 </div>
               )}
@@ -204,7 +204,7 @@ const ProductModal = ({
 
               {product.variacoes && product.variacoes.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="text-sm font-bold text-theme-text uppercase tracking-wider mb-4">Escolha a Opção</h3>
+                  <h3 className="text-sm font-bold text-theme-text uppercase tracking-wider mb-4">Escolha a OpÃ§Ã£o</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {product.variacoes.map((v: any, idx: number) => (
                       <ProductCard 
@@ -233,12 +233,12 @@ const ProductModal = ({
               <div>
                 <h3 className="text-lg font-bold text-theme-text mb-6 flex items-center gap-2">
                   <MessageSquare size={20} className="text-theme-accent" />
-                  Avaliações dos Clientes
+                  AvaliaÃ§Ãµes dos Clientes
                 </h3>
 
                 {/* Review Form */}
                 <form onSubmit={handleSubmitReview} className="bg-theme-card border border-theme-border rounded-2xl p-5 mb-8">
-                  <h4 className="text-sm font-bold text-theme-text mb-4">Deixe sua avaliação</h4>
+                  <h4 className="text-sm font-bold text-theme-text mb-4">Deixe sua avaliaÃ§Ã£o</h4>
                   
                   <div className="mb-4">
                     <label className="block text-xs font-medium text-theme-text-muted mb-2">Sua Nota</label>
@@ -272,7 +272,7 @@ const ProductModal = ({
                   </div>
 
                   <div className="mb-4">
-                    <label htmlFor="comment" className="block text-xs font-medium text-theme-text-muted mb-2">Comentário (Opcional)</label>
+                    <label htmlFor="comment" className="block text-xs font-medium text-theme-text-muted mb-2">ComentÃ¡rio (Opcional)</label>
                     <textarea
                       id="comment"
                       value={newComment}
@@ -292,7 +292,7 @@ const ProductModal = ({
                         : 'bg-theme-accent text-white hover:bg-theme-accent/90 active:scale-[0.98]'
                     }`}
                   >
-                    {isSubmitting ? 'Enviando...' : 'Enviar Avaliação'}
+                    {isSubmitting ? 'Enviando...' : 'Enviar AvaliaÃ§Ã£o'}
                   </button>
                 </form>
 
@@ -324,7 +324,7 @@ const ProductModal = ({
                   ) : (
                     <div className="text-center py-8 bg-theme-bg border border-theme-border border-dashed rounded-xl">
                       <Star size={32} className="text-theme-border mx-auto mb-3" />
-                      <p className="text-theme-text-muted text-sm">Nenhuma avaliação ainda.<br/>Seja o primeiro a avaliar!</p>
+                      <p className="text-theme-text-muted text-sm">Nenhuma avaliaÃ§Ã£o ainda.<br/>Seja o primeiro a avaliar!</p>
                     </div>
                   )}
                 </div>
@@ -529,7 +529,7 @@ const ProductCard = React.memo(({ item, icon: Icon, onAdd, onOpenDetails, isSoph
               <div 
                 onClick={(e) => { e.stopPropagation(); onOpenDetails(item); }}
                 className={`flex items-center justify-center w-10 h-10 transition-all duration-100 shadow-md backdrop-blur-md bg-theme-bg/90 text-theme-accent hover:bg-theme-accent hover:text-white active:scale-95 ${isSophisticatedMode ? 'rounded-full' : 'rounded-xl'}`}
-                title="Detalhes e Avaliações"
+                title="Detalhes e AvaliaÃ§Ãµes"
               >
                 <Info size={18} strokeWidth={2.5} />
               </div>
@@ -696,7 +696,7 @@ export default function App() {
       label: `Falar com ${wa.nome}`,
       icon: Users,
       type: 'whatsapp',
-      message: 'Olá! Gostaria de informações.',
+      message: 'OlÃ¡! Gostaria de informaÃ§Ãµes.',
       numero: wa.numero
     }))
   ];
@@ -706,7 +706,7 @@ export default function App() {
     setReservationError('');
 
     if (!reservationForm.data || !reservationForm.hora) {
-      setReservationError('Por favor, selecione uma data e um horário.');
+      setReservationError('Por favor, selecione uma data e um horÃ¡rio.');
       return;
     }
 
@@ -716,14 +716,14 @@ export default function App() {
     const now = new Date();
     
     if (selectedDate < now) {
-      setReservationError('A data e hora da reserva não podem ser no passado.');
+      setReservationError('A data e hora da reserva nÃ£o podem ser no passado.');
       return;
     }
 
     // Validate quantity
     const quantity = parseInt(reservationForm.quantidade, 10);
     if (isNaN(quantity) || quantity <= 0) {
-      setReservationError('A quantidade de pessoas deve ser um número positivo.');
+      setReservationError('A quantidade de pessoas deve ser um nÃºmero positivo.');
       return;
     }
 
@@ -733,13 +733,13 @@ export default function App() {
       return;
     }
 
-    const text = `*🍽️ Nova Solicitação de Reserva*
-*👤 Nome:* ${reservationForm.nome}
-*📅 Data:* ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(selectedDate)} às ${reservationForm.hora}
-*👥 Quantidade de pessoas:* ${quantity}
-*📝 Observações:* ${reservationForm.obs || 'Nenhuma'}
+    const text = `*ðŸ½ï¸ Nova SolicitaÃ§Ã£o de Reserva*
+*ðŸ‘¤ Nome:* ${reservationForm.nome}
+*ðŸ“… Data:* ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(selectedDate)} Ã s ${reservationForm.hora}
+*ðŸ‘¥ Quantidade de pessoas:* ${quantity}
+*ðŸ“ ObservaÃ§Ãµes:* ${reservationForm.obs || 'Nenhuma'}
 
-*✨ Aguardamos vocês para uma experiência incrível!*`;
+*âœ¨ Aguardamos vocÃªs para uma experiÃªncia incrÃ­vel!*`;
     
     setReservationSuccess(true);
     
@@ -838,11 +838,11 @@ export default function App() {
           [productName]: [...(prev[productName] || []), newReview]
         }));
       } else {
-        alert('Erro ao salvar avaliação. Tente novamente.');
+        alert('Erro ao salvar avaliaÃ§Ã£o. Tente novamente.');
       }
     } catch (error) {
       console.error('Failed to save review:', error);
-      alert('Erro ao salvar avaliação. Tente novamente.');
+      alert('Erro ao salvar avaliaÃ§Ã£o. Tente novamente.');
     }
   }, []);
 
@@ -1055,42 +1055,82 @@ export default function App() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 flex flex-col items-center"
+          className="mb-8 flex flex-col items-center select-none"
         >
-          <div className="relative flex items-center justify-center w-28 h-20 overflow-hidden">
-            <div className="absolute inset-0 rounded-full border-2 border-theme-accent/10 border-dashed animate-[spin_20s_linear_infinite]"></div>
-            <Fish size={48} className="text-theme-accent fill-current mt-4 z-10 animate-float drop-shadow-[0_10px_20px_rgba(var(--color-theme-accent),0.2)]" />
+          <div className="relative w-[280px] h-[140px] flex justify-center overflow-visible">
+            <svg viewBox="0 0 200 120" className="w-full h-full overflow-visible drop-shadow-md">
+              <defs>
+                <clipPath id="fish-clip">
+                  <ellipse cx="100" cy="80" rx="60" ry="35" />
+                </clipPath>
+              </defs>
+              
+              {/* Rope Semi-Circle - Dark Blue */}
+              <path 
+                d="M 30,90 A 70,70 0 0,1 170,90" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="10" 
+                strokeDasharray="6 4"
+                className="text-[#203a56] dark:text-[#6ba1d6]"
+              />
+              <path 
+                d="M 30,90 A 70,70 0 0,1 170,90" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="14"
+                strokeOpacity="0.2"
+                className="text-[#203a56] dark:text-[#6ba1d6]"
+              />
+
+              {/* Solid Red Fish */}
+              <g transform="translate(65, 45) scale(0.6)">
+                <path 
+                  d="M 85.3,16 C 60,16 35,30 20,45 L -10,15 C -5,35 -5,55 -10,75 L 20,45 C 35,60 60,74 85.3,74 C 115,74 130,55 130,45 C 130,35 115,16 85.3,16 Z" 
+                  className="fill-[#ce1f21]"
+                />
+                <circle cx="110" cy="35" r="4" fill="white" />
+              </g>
+
+              {/* Dark Blue Waves */}
+              <path 
+                d="M 10,95 Q 25,85 40,95 T 70,95 T 100,95 T 130,95 T 160,95 T 190,95" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="4.5" 
+                strokeLinecap="round"
+                className="text-[#203a56] dark:text-[#6ba1d6]"
+              />
+              <path 
+                d="M 15,107 Q 30,97 45,107 T 75,107 T 105,107 T 135,107 T 165,107 T 185,107" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="4.5" 
+                strokeLinecap="round"
+                className="text-[#203a56] dark:text-[#6ba1d6]"
+              />
+            </svg>
           </div>
-          <motion.div 
-            animate={{ x: [-10, 10, -10], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2, type: "spring", bounce: 0.4 }}
+            className="text-6xl md:text-[5.5rem] mt-4 font-black tracking-tighter text-[#ce1f21] uppercase"
+            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
           >
-            <Waves size={32} className="text-theme-text -mt-2 z-10 opacity-60" strokeWidth={2} />
-          </motion.div>
+            Borgert
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.5, delay: 0.5 }}
+            className="text-sm md:text-lg text-[#203a56] dark:text-[#6ba1d6] font-semibold tracking-[0.2em] md:tracking-[0.3em] uppercase mt-1"
+          >
+            Buffet | Restaurante | Eventos
+          </motion.p>
         </motion.div>
-        
-        <motion.h1 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.2, type: "spring", bounce: 0.4 }}
-          className="text-5xl md:text-8xl font-black tracking-tighter text-theme-accent uppercase font-serif"
-        >
-          Borgert
-        </motion.h1>
-        <motion.div 
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 1.2, delay: 0.5, ease: "circOut" }}
-          className="h-[4px] bg-gradient-to-r from-transparent via-theme-accent/30 to-transparent w-32 my-6 rounded-full"
-        />
-        <motion.p 
-          initial={{ opacity: 0, letterSpacing: '0.1em' }}
-          animate={{ opacity: 1, letterSpacing: '0.5em' }}
-          transition={{ duration: 1.5, delay: 0.7 }}
-          className="text-xs md:text-base text-theme-text-muted uppercase font-bold"
-        >
-          Buffet • Restaurante • Eventos
-        </motion.p>
       </header>
 
       {/* Featured / Promotions Section */}
@@ -1104,11 +1144,11 @@ export default function App() {
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-red-500 rounded-lg flex items-center justify-center text-white text-sm">
-                🔥
+                ðŸ”¥
               </div>
               <div>
                 <h2 className="text-xl md:text-2xl font-bold text-theme-text font-serif">Destaques & Ofertas</h2>
-                <p className="text-[11px] text-theme-text-muted uppercase tracking-wider font-medium">Imperdíveis</p>
+                <p className="text-[11px] text-theme-text-muted uppercase tracking-wider font-medium">ImperdÃ­veis</p>
               </div>
             </div>
 
@@ -1216,7 +1256,7 @@ export default function App() {
             }`}
           >
             <UtensilsCrossed size={20} />
-            <span className="tracking-wide text-sm md:text-base">Cardápio</span>
+            <span className="tracking-wide text-sm md:text-base">CardÃ¡pio</span>
           </button>
           <button
             onClick={() => handleCategoryChange('bebidas')}
@@ -1345,7 +1385,7 @@ export default function App() {
                           ))
                         ) : (
                           <div className="col-span-full text-center py-12">
-                            <p className="text-theme-text-muted text-lg">Nenhum item com essas características.</p>
+                            <p className="text-theme-text-muted text-lg">Nenhum item com essas caracterÃ­sticas.</p>
                           </div>
                         )}
                       </div>
@@ -1413,7 +1453,7 @@ export default function App() {
                       ))
                     ) : (
                       <div className="col-span-full text-center py-12">
-                        <p className="text-theme-text-muted text-lg">Nenhum item com essas características.</p>
+                        <p className="text-theme-text-muted text-lg">Nenhum item com essas caracterÃ­sticas.</p>
                       </div>
                     )}
                   </div>
@@ -1428,7 +1468,7 @@ export default function App() {
       
       <footer className="mt-auto text-center py-10 safe-pb shrink-0">
         <div className="w-16 h-[1px] bg-theme-border mx-auto mb-6"></div>
-        <p className="text-theme-text-muted text-xs font-serif italic">Obrigado pela preferência!</p>
+        <p className="text-theme-text-muted text-xs font-serif italic">Obrigado pela preferÃªncia!</p>
       </footer>
 
       {/* WhatsApp Floating Button & Menu */}
@@ -1452,7 +1492,7 @@ export default function App() {
               >
                 <div className="p-3 border-b border-theme-border/50 mb-2">
                   <h4 className="font-semibold text-theme-text text-sm">Como podemos ajudar?</h4>
-                  <p className="text-xs text-theme-text-muted mt-0.5">Escolha uma opção de contato</p>
+                  <p className="text-xs text-theme-text-muted mt-0.5">Escolha uma opÃ§Ã£o de contato</p>
                 </div>
                 <div className="flex flex-col gap-1">
                   {whatsappOptions.map((option) => (
@@ -1584,7 +1624,7 @@ export default function App() {
                       </select>
                     </div>
                     <div className="col-span-2 sm:col-span-1">
-                      <label htmlFor="hora" className="block text-sm font-medium text-theme-text mb-1.5">Horário</label>
+                      <label htmlFor="hora" className="block text-sm font-medium text-theme-text mb-1.5">HorÃ¡rio</label>
                       <select
                         id="hora"
                         required
@@ -1594,7 +1634,7 @@ export default function App() {
                         className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="" disabled>
-                          {!reservationForm.data ? 'Selecione a data' : (availableTimes.length === 0 ? 'Sem horários' : 'Selecione o horário')}
+                          {!reservationForm.data ? 'Selecione a data' : (availableTimes.length === 0 ? 'Sem horÃ¡rios' : 'Selecione o horÃ¡rio')}
                         </option>
                         {availableTimes.map(time => (
                           <option key={time} value={time}>{time}</option>
@@ -1618,14 +1658,14 @@ export default function App() {
                   </div>
                   
                   <div>
-                    <label htmlFor="obs" className="block text-sm font-medium text-theme-text mb-1.5">Observações (Opcional)</label>
+                    <label htmlFor="obs" className="block text-sm font-medium text-theme-text mb-1.5">ObservaÃ§Ãµes (Opcional)</label>
                     <textarea
                       id="obs"
                       rows={3}
                       value={reservationForm.obs}
                       onChange={(e) => setReservationForm({...reservationForm, obs: e.target.value})}
                       className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all resize-none"
-                      placeholder="Alguma preferência ou restrição?"
+                      placeholder="Alguma preferÃªncia ou restriÃ§Ã£o?"
                     />
                   </div>
                   
@@ -1650,7 +1690,7 @@ export default function App() {
                     className="w-full mt-2 bg-[#25D366] text-white py-4 rounded-xl font-semibold tracking-wide transition-all duration-150 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl hover:bg-[#20bd5a] active:scale-[0.98]"
                   >
                     <MessageSquare size={20} />
-                    <span>Enviar Solicitação via WhatsApp</span>
+                    <span>Enviar SolicitaÃ§Ã£o via WhatsApp</span>
                   </button>
                 </form>
               )}
@@ -1737,15 +1777,15 @@ export default function App() {
                     <UtensilsCrossed size={48} className="text-theme-accent/50" strokeWidth={1.5} />
                   </div>
                 </div>
-                <h3 className="text-2xl font-serif font-bold text-theme-text mb-2">Seu pedido está vazio</h3>
+                <h3 className="text-2xl font-serif font-bold text-theme-text mb-2">Seu pedido estÃ¡ vazio</h3>
                 <p className="text-theme-text-muted text-sm md:text-base max-w-[250px] mx-auto leading-relaxed">
-                  Que tal explorar nosso cardápio e adicionar algumas delícias?
+                  Que tal explorar nosso cardÃ¡pio e adicionar algumas delÃ­cias?
                 </p>
                 <button 
                   onClick={() => setIsCartOpen(false)}
                   className="mt-8 px-8 py-3 bg-theme-bg border-2 border-theme-accent text-theme-accent rounded-xl font-semibold hover:bg-theme-accent hover:text-white transition-colors duration-200 active:scale-95"
                 >
-                  Ver Cardápio
+                  Ver CardÃ¡pio
                 </button>
               </div>
             ) : (
@@ -1846,7 +1886,7 @@ export default function App() {
                 <div className="p-8 border-b border-theme-border flex justify-between items-start bg-theme-bg/50">
                   <div>
                     <h3 className="text-2xl font-serif font-bold text-theme-text italic">Resumo do Pedido</h3>
-                    <p className="text-xs text-theme-text-muted mt-1 uppercase tracking-widest font-black opacity-60">Apresente ao garçom</p>
+                    <p className="text-xs text-theme-text-muted mt-1 uppercase tracking-widest font-black opacity-60">Apresente ao garÃ§om</p>
                   </div>
                   <button 
                     onClick={() => setIsOrderSummaryOpen(false)}
@@ -1908,3 +1948,4 @@ export default function App() {
     </div>
   );
 }
+
