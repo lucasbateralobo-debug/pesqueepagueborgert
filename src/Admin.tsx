@@ -719,7 +719,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
               {/* EMPLOYEE CONSUMPTION */}
               {activeTab === 'employees' && (
                 <React.Fragment key="employees">
-                  <EmployeeConsumption userName={currentUser?.nome || currentUser?.email || ''} />
+                  <EmployeeConsumption userRole={userRole} userName={currentUser?.nome || currentUser?.email || ''} />
                 </React.Fragment>
               )}
 

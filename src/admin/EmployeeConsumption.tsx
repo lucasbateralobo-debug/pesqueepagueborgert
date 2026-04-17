@@ -29,6 +29,7 @@ type ConsumptionEntry = {
   quantidade: number;
   data: string;
   registrado_por: string;
+  pago: boolean;
   created_at: string;
   employee_nome?: string;
   product_nome?: string;
@@ -36,13 +37,14 @@ type ConsumptionEntry = {
 };
 
 type EmployeeConsumptionProps = {
+  userRole: string;
   userName: string;
 };
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-export default function EmployeeConsumption({ userName }: EmployeeConsumptionProps) {
+export default function EmployeeConsumption({ userRole, userName }: EmployeeConsumptionProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [consumptions, setConsumptions] = useState<ConsumptionEntry[]>([]);
@@ -165,11 +167,32 @@ export default function EmployeeConsumption({ userName }: EmployeeConsumptionPro
   };
 
   const deleteConsumption = async (id: string) => {
+    if (userRole !== 'admin') {
+      alert('Somente o administrador pode excluir consumos.');
+      return;
+    }
     if (!confirm('Remover este registro de consumo?')) return;
     try {
       await fetch(`/api/employee-consumption/${id}`, { method: 'DELETE' });
       fetchData();
     } catch { }
+  };
+
+  const toggleConsumptionPaid = async (id: string, currentlyPaid: boolean) => {
+    if (userRole !== 'admin') {
+      alert('Somente o administrador pode dar baixa no consumo.');
+      return;
+    }
+    try {
+      await fetch(`/api/employee-consumption/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pago: !currentlyPaid }),
+      });
+      fetchData();
+    } catch (err) {
+      console.error('Toggle paid error:', err);
+    }
   };
 
   const filteredConsumptions = useMemo(() => {
@@ -186,10 +209,12 @@ export default function EmployeeConsumption({ userName }: EmployeeConsumptionPro
 
   // Stats
   const employeeStats = useMemo(() => {
-    const stats: Record<string, { total: number; count: number }> = {};
+    const stats: Record<string, { total: number; pendente: number; count: number }> = {};
     consumptions.forEach(c => {
-      if (!stats[c.employee_id]) stats[c.employee_id] = { total: 0, count: 0 };
-      stats[c.employee_id].total += (c.product_preco || 0) * c.quantidade;
+      if (!stats[c.employee_id]) stats[c.employee_id] = { total: 0, pendente: 0, count: 0 };
+      const val = (c.product_preco || 0) * c.quantidade;
+      stats[c.employee_id].total += val;
+      if (!c.pago) stats[c.employee_id].pendente += val;
       stats[c.employee_id].count += c.quantidade;
     });
     return stats;
@@ -480,12 +505,30 @@ export default function EmployeeConsumption({ userName }: EmployeeConsumptionPro
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => deleteConsumption(c.id)}
-                              className="p-2 text-theme-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              {/* DAR BAIXA (Admin Only) */}
+                              <button
+                                onClick={() => toggleConsumptionPaid(c.id, c.pago)}
+                                title={c.pago ? "Marcar como Pendente" : "Dar Baixa (Pago)"}
+                                className={`p-2 rounded-lg transition-all ${
+                                  c.pago 
+                                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' 
+                                    : 'text-theme-text-muted hover:text-green-500 hover:bg-green-500/10'
+                                } ${userRole !== 'admin' ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              >
+                                {c.pago ? <Check size={16} strokeWidth={3} /> : <FileText size={16} />}
+                              </button>
+
+                              {/* REMOVER (Admin Only) */}
+                              {userRole === 'admin' && (
+                                <button
+                                  onClick={() => deleteConsumption(c.id)}
+                                  className="p-2 text-theme-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -590,8 +633,8 @@ export default function EmployeeConsumption({ userName }: EmployeeConsumptionPro
                         <div className="flex items-center gap-4">
                           {stats && (
                             <div className="text-right hidden md:block">
-                              <p className="text-sm font-bold text-theme-accent">{formatCurrency(stats.total)}</p>
-                              <p className="text-[10px] text-theme-text-muted">{stats.count} itens consumidos</p>
+                              <p className="text-sm font-bold text-theme-accent">Pendente: {formatCurrency(stats.pendente)}</p>
+                              <p className="text-[10px] text-theme-text-muted">Total: {formatCurrency(stats.total)} • {stats.count} itens</p>
                             </div>
                           )}
                           <div className="flex items-center gap-1">

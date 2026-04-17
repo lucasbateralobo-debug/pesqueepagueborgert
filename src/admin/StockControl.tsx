@@ -20,6 +20,7 @@ type StockEntry = {
   product_id: string;
   week_start: string;
   urgency: 'alta' | 'media' | 'baixa' | 'ok';
+  status: 'pendente' | 'comprado' | 'não chegou';
   quantity_estimate: number | null;
   notes: string;
   updated_by: string;
@@ -36,6 +37,12 @@ const URGENCY_CONFIG = {
   media: { label: 'Médio', icon: ArrowUpCircle, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/30', badge: 'bg-amber-500 text-white', glow: 'shadow-amber-500/20' },
   baixa: { label: 'Baixo', icon: ArrowDownCircle, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/30', badge: 'bg-blue-500 text-white', glow: '' },
   ok: { label: 'OK', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/30', badge: 'bg-green-500 text-white', glow: '' },
+};
+
+const STATUS_CONFIG = {
+  pendente: { label: 'Pendente', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  comprado: { label: 'Comprado', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10' },
+  'não chegou': { label: 'Não Chegou', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
 };
 
 function getWeekStart(date: Date = new Date()): string {
@@ -156,6 +163,7 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
       product_id: productId,
       week_start: currentWeek,
       urgency: edits.urgency ?? existing?.urgency ?? 'ok',
+      status: edits.status ?? existing?.status ?? 'pendente',
       quantity_estimate: edits.quantity_estimate ?? existing?.quantity_estimate ?? null,
       notes: edits.notes ?? existing?.notes ?? '',
       updated_by: userName,
@@ -452,18 +460,38 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
                   </div>
 
                   {/* Urgency Select */}
-                  <div className="md:w-1/5">
-                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1">Urgência de Compra</label>
+                  <div className="md:w-[15%]">
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Urgência</label>
                     <select
                       value={urgency}
                       onChange={(e) => updateLocalEntry(product.id, 'urgency', e.target.value)}
-                      className={`w-full bg-theme-bg border rounded-lg px-3 py-2 text-sm text-theme-text focus:outline-none focus:border-theme-accent transition-all ${isUrgent ? 'border-red-500/50 font-bold' : 'border-theme-border'}`}
+                      className={`w-full bg-theme-bg border rounded-lg px-2 py-2 text-xs text-theme-text focus:outline-none focus:border-theme-accent transition-all ${isUrgent ? 'border-red-500/50 font-bold' : 'border-theme-border'}`}
                     >
-                      <option value="ok">✅ OK - Tem estoque</option>
-                      <option value="baixa">🔵 Baixo - Pode comprar</option>
-                      <option value="media">🟡 Médio - Comprar logo</option>
-                      <option value="alta">🔴 URGENTE - Acabando!</option>
+                      <option value="ok">✅ Tudo OK</option>
+                      <option value="baixa">🔵 Repor em breve</option>
+                      <option value="media">🟡 Médio - Comprar</option>
+                      <option value="alta">🔴 URGENTE!</option>
                     </select>
+                  </div>
+
+                  {/* Status Purchase (Admin ONLY) */}
+                  <div className="md:w-[18%]">
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Status Compra</label>
+                    <div className="relative group">
+                      <select
+                        disabled={userRole !== 'admin'}
+                        value={getEditValue(product.id, 'status') || 'pendente'}
+                        onChange={(e) => updateLocalEntry(product.id, 'status', e.target.value)}
+                        className={`w-full bg-theme-bg border rounded-lg px-2 py-2 text-xs text-theme-text focus:outline-none focus:border-theme-accent transition-all ${userRole !== 'admin' ? 'opacity-70 cursor-not-allowed border-theme-border/50' : 'border-theme-border'}`}
+                      >
+                        <option value="pendente">⏳ Pendente</option>
+                        <option value="comprado">🛒 Comprado</option>
+                        <option value="não chegou">🚩 Não Chegou</option>
+                      </select>
+                      {userRole !== 'admin' && (
+                        <div className="absolute inset-0 z-10 pointer-events-none group-hover:bg-theme-bg/10 rounded-lg transition-all" />
+                      )}
+                    </div>
                   </div>
 
                   {/* Quantity */}
