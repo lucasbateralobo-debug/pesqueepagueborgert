@@ -25,6 +25,7 @@ import {
   Cake,
   Gift,
   Upload,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "./lib/supabase";
