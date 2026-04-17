@@ -33,6 +33,8 @@ import LoginScreen from './admin/LoginScreen';
 import UserManagement from './admin/UserManagement';
 import StockControl from './admin/StockControl';
 import EmployeeConsumption from './admin/EmployeeConsumption';
+import HistoryLogs from './admin/HistoryLogs';
+import { logAction } from './lib/logger';
 
 type Product = {
   id: string;
@@ -58,7 +60,7 @@ type AppSettings = {
   birthday_items: string;
 };
 
-type AdminTab = 'dashboard' | 'products' | 'settings' | 'users' | 'stock' | 'employees' | 'birthday';
+type AdminTab = 'dashboard' | 'products' | 'settings' | 'users' | 'stock' | 'employees' | 'birthday' | 'history';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -66,7 +68,7 @@ const formatCurrency = (value: number) => {
 
 // Define which tabs each role can access
 const ROLE_TABS: Record<UserRole, AdminTab[]> = {
-  admin: ['dashboard', 'products', 'settings', 'users', 'stock', 'employees', 'birthday'],
+  admin: ['dashboard', 'products', 'settings', 'users', 'stock', 'employees', 'birthday', 'history'],
   estoque: ['stock'],
   funcionarios: ['employees'],
 };
@@ -79,6 +81,7 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: any }> = {
   stock: { label: 'Estoque', icon: Boxes },
   employees: { label: 'Funcionários', icon: Coffee },
   birthday: { label: 'Aniversário', icon: Cake },
+  history: { label: 'Histórico', icon: FileText },
 };
 
 export default function Admin({ onBack }: { onBack: () => void }) {
@@ -223,6 +226,15 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       });
 
       if (res.ok) {
+        // LOG ACTION
+        await logAction({
+          user_id: currentUser?.id || '',
+          user_name: currentUser?.nome || currentUser?.email || 'Unknown',
+          action_type: editingProduct.categoria === 'aniversario' ? 'aniversario_edit' : 'produto_edit',
+          description: `Atualizou produto: ${editingProduct.nome}`,
+          target_id: editingProduct.id
+        });
+
         setIsProductModalOpen(false);
         fetchData();
       } else {
@@ -239,6 +251,14 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        // LOG ACTION
+        await logAction({
+          user_id: currentUser?.id || '',
+          user_name: currentUser?.nome || currentUser?.email || 'Unknown',
+          action_type: 'produto_delete',
+          description: `Removeu produto ID: ${id}`,
+          target_id: id
+        });
         fetchData();
       }
     } catch (error) {
@@ -769,6 +789,17 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                       </div>
                     ))}
                   </div>
+                </motion.div>
+              )}
+              {/* HISTORY LOGS - admin only */}
+              {activeTab === 'history' && (
+                <motion.div 
+                  key="history"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <HistoryLogs />
                 </motion.div>
               )}
             </AnimatePresence>

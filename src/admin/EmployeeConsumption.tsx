@@ -5,6 +5,8 @@ import {
   FileText, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { logAction } from '../lib/logger';
+import { supabase } from '../lib/supabase';
 
 type Product = {
   id: string;
@@ -153,6 +155,17 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
       });
 
       if (res.ok) {
+        // LOG ACTION
+        const emp = employees.find(e => e.id === selectedEmployee);
+        const prod = products.find(p => p.id === selectedProduct);
+        await logAction({
+          user_id: '',
+          user_name: userName,
+          action_type: 'consumo_add',
+          description: `Registrou consumo: ${prod?.nome} para ${emp?.nome} (${quantity}x)`,
+          target_id: selectedEmployee
+        });
+        
         setSuccessMsg('Consumo registrado com sucesso!');
         setSelectedProduct('');
         setQuantity(1);
@@ -173,8 +186,18 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
     }
     if (!confirm('Remover este registro de consumo?')) return;
     try {
-      await fetch(`/api/employee-consumption/${id}`, { method: 'DELETE' });
-      fetchData();
+      const res = await fetch(`/api/employee-consumption/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        // LOG ACTION
+        await logAction({
+          user_id: '',
+          user_name: userName,
+          action_type: 'consumo_delete',
+          description: `Removeu registro de consumo ID: ${id}`,
+          target_id: id
+        });
+        fetchData();
+      }
     } catch { }
   };
 
@@ -184,12 +207,22 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
       return;
     }
     try {
-      await fetch(`/api/employee-consumption/${id}`, {
+      const res = await fetch(`/api/employee-consumption/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pago: !currentlyPaid }),
       });
-      fetchData();
+      if (res.ok) {
+        // LOG ACTION
+        await logAction({
+          user_id: '',
+          user_name: userName,
+          action_type: 'consumo_pago',
+          description: `${currentlyPaid ? 'Estornou baixa' : 'Deu baixa'} no consumo ID: ${id}`,
+          target_id: id
+        });
+        fetchData();
+      }
     } catch (err) {
       console.error('Toggle paid error:', err);
     }

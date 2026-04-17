@@ -6,6 +6,8 @@ import {
   Wine, UtensilsCrossed, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { logAction } from '../lib/logger';
+import { supabase } from '../lib/supabase';
 
 type Product = {
   id: string;
@@ -178,13 +180,16 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        // Remove from editing
-        setEditingEntries(prev => {
-          const next = { ...prev };
-          delete next[productId];
-          return next;
+        // LOG ACTION
+        const product = products.find(p => p.id === productId);
+        await logAction({
+          user_id: '', // Supabase ID could be fetched if needed, but userName is used in the UI
+          user_name: userName,
+          action_type: 'estoque_edit',
+          description: `Alterou estoque: ${product?.nome || productId} (Status: ${payload.status}, Urgência: ${payload.urgency})`,
+          target_id: productId
         });
+
         fetchData();
       }
     } catch (err) {
