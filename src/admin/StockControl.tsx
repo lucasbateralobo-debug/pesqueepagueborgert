@@ -464,63 +464,68 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
                     </div>
                   </div>
 
-                  {/* Urgency Select */}
-                  <div className="md:w-[15%]">
+                  {/* Urgency Select (Custom Premium) */}
+                  <div className="md:w-[15%] relative group">
                     <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Urgência</label>
-                    <select
-                      value={urgency}
-                      onChange={(e) => updateLocalEntry(product.id, 'urgency', e.target.value)}
-                      className={`w-full bg-theme-bg border rounded-lg px-2 py-2 text-xs text-theme-text focus:outline-none focus:border-theme-accent transition-all ${isUrgent ? 'border-red-500/50 font-bold' : 'border-theme-border'}`}
-                    >
-                      <option value="ok">✅ Tudo OK</option>
-                      <option value="baixa">🔵 Repor em breve</option>
-                      <option value="media">🟡 Médio - Comprar</option>
-                      <option value="alta">🔴 URGENTE!</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={urgency}
+                        onChange={(e) => updateLocalEntry(product.id, 'urgency', e.target.value)}
+                        className={`w-full bg-theme-bg/50 border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text appearance-none focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all cursor-pointer ${isUrgent ? 'border-red-500 text-red-500 bg-red-500/5' : 'border-theme-border'}`}
+                      >
+                        <option value="ok" className="bg-theme-card">✓ ESTOQUE OK</option>
+                        <option value="baixa" className="bg-theme-card">↓ REPOR LOGO</option>
+                        <option value="media" className="bg-theme-card">↑ MÉDIO - COMPRAR</option>
+                        <option value="alta" className="bg-theme-card">⚠ URGENTE!</option>
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-theme-text-muted">
+                        <ChevronDown size={14} />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Status Purchase (Admin ONLY) */}
+                  {/* Status Purchase (Custom Premium) */}
                   <div className="md:w-[18%]">
                     <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Status Compra</label>
-                    <div className="relative group">
+                    <div className="relative">
                       <select
                         disabled={userRole !== 'admin'}
                         value={getEditValue(product.id, 'status') || 'pendente'}
                         onChange={(e) => updateLocalEntry(product.id, 'status', e.target.value)}
-                        className={`w-full bg-theme-bg border rounded-lg px-2 py-2 text-xs text-theme-text focus:outline-none focus:border-theme-accent transition-all ${userRole !== 'admin' ? 'opacity-70 cursor-not-allowed border-theme-border/50' : 'border-theme-border'}`}
+                        className={`w-full bg-theme-bg/50 border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text appearance-none focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all cursor-pointer ${userRole !== 'admin' ? 'opacity-50 grayscale' : 'border-theme-border'}`}
                       >
-                        <option value="pendente">⏳ Pendente</option>
-                        <option value="comprado">🛒 Comprado</option>
-                        <option value="não chegou">🚩 Não Chegou</option>
+                        <option value="pendente" className="bg-theme-card">⏳ PENDENTE</option>
+                        <option value="comprado" className="bg-theme-card">✅ COMPRADO</option>
+                        <option value="não chegou" className="bg-theme-card">❌ NÃO CHEGOU</option>
                       </select>
-                      {userRole !== 'admin' && (
-                        <div className="absolute inset-0 z-10 pointer-events-none group-hover:bg-theme-bg/10 rounded-lg transition-all" />
-                      )}
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-theme-text-muted">
+                        <ChevronDown size={14} />
+                      </div>
                     </div>
                   </div>
 
                   {/* Quantity */}
                   <div className="md:w-1/6">
-                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1">Qtd. em Estoque</label>
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Qtd. em Estoque</label>
                     <input
                       type="number"
                       min={0}
                       value={getEditValue(product.id, 'quantity_estimate') ?? ''}
                       onChange={(e) => updateLocalEntry(product.id, 'quantity_estimate', e.target.value ? parseInt(e.target.value) : null)}
                       placeholder="—"
-                      className="w-full bg-theme-bg border border-theme-border rounded-lg px-3 py-2 text-sm text-theme-text focus:outline-none focus:border-theme-accent transition-all"
+                      className="w-full bg-theme-bg/50 border border-theme-border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all placeholder:text-theme-text-muted/30"
                     />
                   </div>
 
                   {/* Notes */}
                   <div className="flex-1">
-                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1">Observação</label>
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Observação</label>
                     <input
                       type="text"
                       value={getEditValue(product.id, 'notes') ?? ''}
                       onChange={(e) => updateLocalEntry(product.id, 'notes', e.target.value)}
-                      placeholder="Ex: Acabou ontem, precisa pra sexta..."
-                      className="w-full bg-theme-bg border border-theme-border rounded-lg px-3 py-2 text-sm text-theme-text focus:outline-none focus:border-theme-accent transition-all"
+                      placeholder="Ex: Acabou ontem..."
+                      className="w-full bg-theme-bg/50 border border-theme-border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all placeholder:text-theme-text-muted/30"
                     />
                   </div>
 
