@@ -1124,11 +1124,17 @@ export default function App() {
             if (e.detail === 3) setIsBirthdayOpen(true);
           }}
         >
-          <div className="relative w-full max-w-[280px] md:max-w-[400px]">
+          <div className="relative w-full max-w-[280px] md:max-w-[400px] flex items-center justify-center">
+             {/* FEIXE DE LUZ DE FUNDO (Glow background for dark mode) */}
+             <div 
+               className="absolute inset-0 blur-[60px] opacity-0 dark:opacity-100 transition-opacity duration-1000 scale-125"
+               style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)' }}
+             ></div>
+             
              <img 
                src="/logo-borgert.png" 
                alt="Borgert Logo" 
-               className="w-full h-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.1)] dark:brightness-110 dark:filter dark:drop-shadow-[0_0_1px_#fff] dark:drop-shadow-[0_0_1px_#fff] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] transition-all"
+               className="w-full h-auto relative z-10 drop-shadow-[0_4px_15px_rgba(0,0,0,0.08)] dark:brightness-110 transition-all duration-500"
              />
           </div>
         </motion.div>
