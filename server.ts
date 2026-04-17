@@ -350,3 +350,5 @@ if (process.env.NODE_ENV !== 'production') {
   // If run as a node script in production
   app.use(express.static(path.join(__dirname, 'dist')));
 // Local running is handled via "npm run dev" or export over Vercel natively.
+}
+
