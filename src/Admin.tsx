@@ -21,7 +21,9 @@ import {
   Boxes,
   Coffee,
   Shield,
-  Loader2
+  Loader2,
+  Cake,
+  Gift
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './lib/supabase';
@@ -52,9 +54,10 @@ type Product = {
 type AppSettings = {
   whatsapp: string;
   max_reservations: string;
+  birthday_items: string;
 };
 
-type AdminTab = 'dashboard' | 'products' | 'settings' | 'users' | 'stock' | 'employees';
+type AdminTab = 'dashboard' | 'products' | 'settings' | 'users' | 'stock' | 'employees' | 'birthday';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -62,7 +65,7 @@ const formatCurrency = (value: number) => {
 
 // Define which tabs each role can access
 const ROLE_TABS: Record<UserRole, AdminTab[]> = {
-  admin: ['dashboard', 'products', 'settings', 'users', 'stock', 'employees'],
+  admin: ['dashboard', 'products', 'settings', 'users', 'stock', 'employees', 'birthday'],
   estoque: ['stock'],
   funcionarios: ['employees'],
 };
@@ -74,6 +77,7 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: any }> = {
   users: { label: 'Usuários', icon: Users },
   stock: { label: 'Estoque', icon: Boxes },
   employees: { label: 'Funcionários', icon: Coffee },
+  birthday: { label: 'Aniversário', icon: Cake },
 };
 
 export default function Admin({ onBack }: { onBack: () => void }) {
@@ -82,7 +86,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [products, setProducts] = useState<Product[]>([]);
-  const [settings, setSettings] = useState<AppSettings>({ whatsapp: '', max_reservations: '' });
+  const [settings, setSettings] = useState<AppSettings>({ whatsapp: '', max_reservations: '', birthday_items: '[]' });
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -667,6 +671,112 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                 <React.Fragment key="employees">
                   <EmployeeConsumption userName={currentUser?.nome || currentUser?.email || ''} />
                 </React.Fragment>
+              )}
+
+              {/* BIRTHDAY CONFIGURATION */}
+              {activeTab === 'birthday' && (
+                <motion.div 
+                  key="birthday"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  <header>
+                    <h2 className="text-3xl font-bold font-serif text-theme-text">Configuração de Aniversário</h2>
+                    <p className="text-theme-text-muted">Gerencie os itens disponíveis para comemorações na mesa.</p>
+                  </header>
+                  
+                  {(() => {
+                    const birthdayItems = (() => {
+                      try {
+                        const items = JSON.parse(settings.birthday_items);
+                        return Array.isArray(items) ? items : [];
+                      } catch { return []; }
+                    })();
+
+                    const updateItem = (index: number, key: string, value: string) => {
+                      const newList = [...birthdayItems];
+                      newList[index][key] = value;
+                      setSettings({...settings, birthday_items: JSON.stringify(newList)});
+                    };
+
+                    const addItem = () => {
+                      const newList = [...birthdayItems, { nome: '', desc: '', imagem: '' }];
+                      setSettings({...settings, birthday_items: JSON.stringify(newList)});
+                    };
+
+                    const removeItem = (index: number) => {
+                      const newList = birthdayItems.filter((_, i) => i !== index);
+                      setSettings({...settings, birthday_items: JSON.stringify(newList)});
+                    };
+
+                    return (
+                      <div className="space-y-6 max-w-3xl">
+                        <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm space-y-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-theme-text">Itens de Parabéns</h3>
+                            <button 
+                              onClick={addItem}
+                              className="bg-theme-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2"
+                            >
+                              <Plus size={18} /> Adicionar Item
+                            </button>
+                          </div>
+
+                          <div className="space-y-4">
+                            {birthdayItems.map((item, index) => (
+                              <div key={index} className="bg-theme-bg/50 p-4 rounded-2xl border border-theme-border flex gap-4">
+                                <div className="flex-1 space-y-3">
+                                  <input 
+                                    type="text" 
+                                    value={item.nome}
+                                    onChange={(e) => updateItem(index, 'nome', e.target.value)}
+                                    placeholder="Nome do prato/item (Ex: Bolo de Chocolate)"
+                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text font-bold"
+                                  />
+                                  <input 
+                                    type="text" 
+                                    value={item.desc}
+                                    onChange={(e) => updateItem(index, 'desc', e.target.value)}
+                                    placeholder="Descrição (Ex: Ideal para 5 pessoas)"
+                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-sm"
+                                  />
+                                  <input 
+                                    type="text" 
+                                    value={item.imagem}
+                                    onChange={(e) => updateItem(index, 'imagem', e.target.value)}
+                                    placeholder="URL da Imagem"
+                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-xs"
+                                  />
+                                </div>
+                                <button 
+                                  onClick={() => removeItem(index)}
+                                  className="self-start p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                                >
+                                  <Trash2 size={20} />
+                                </button>
+                              </div>
+                            ))}
+                            {birthdayItems.length === 0 && (
+                              <div className="text-center py-12 text-theme-text-muted bg-theme-bg/20 rounded-2xl border-2 border-dashed border-theme-border">
+                                <Cake size={48} className="mx-auto mb-4 opacity-20" />
+                                <p>Nenhum item cadastrado para aniversário.</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <button 
+                            onClick={updateSettings}
+                            className="w-full bg-theme-accent text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-6"
+                          >
+                            <Save size={20} /> Salvar Lista de Aniversário
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </motion.div>
               )}
             </AnimatePresence>
           </div>

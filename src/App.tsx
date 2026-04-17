@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search, MessageSquare, Info, Moon, Sun, Calendar, Users, ShoppingBag, Settings } from 'lucide-react';
+import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search, MessageSquare, Info, Moon, Sun, Calendar, Users, ShoppingBag, Settings, Gift, Cake, Music, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -590,8 +591,10 @@ export default function App() {
   const [bebidas, setBebidas] = useState<Category[]>([]);
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({
     whatsapp: '5511999999999',
-    max_reservations: '20'
+    max_reservations: '20',
+    birthday_items: '[]'
   });
+  const [isBirthdayOpen, setIsBirthdayOpen] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [activeCategory, setActiveCategory] = useState<MainCategory>('comidas');
   const [activeSubcategory, setActiveSubcategory] = useState<string>('');
@@ -665,7 +668,7 @@ export default function App() {
     const currentMinute = now.getMinutes();
 
     const times = [];
-    const addRange = (startH, endH) => {
+    const addRange = (startH: number, endH: number) => {
       for (let h = startH; h <= endH; h++) {
         for (let min of [0, 30]) {
           if (h === endH && min === 30) continue;
@@ -716,14 +719,14 @@ export default function App() {
     const now = new Date();
     
     if (selectedDate < now) {
-      setReservationError('A data e hora da reserva nÃ£o podem ser no passado.');
+      setReservationError('A data e hora da reserva não podem ser no passado.');
       return;
     }
 
     // Validate quantity
     const quantity = parseInt(reservationForm.quantidade, 10);
     if (isNaN(quantity) || quantity <= 0) {
-      setReservationError('A quantidade de pessoas deve ser um nÃºmero positivo.');
+      setReservationError('A quantidade de pessoas deve ser um número positivo.');
       return;
     }
 
@@ -733,13 +736,13 @@ export default function App() {
       return;
     }
 
-    const text = `*ðŸ½ï¸ Nova SolicitaÃ§Ã£o de Reserva*
-*ðŸ‘¤ Nome:* ${reservationForm.nome}
-*ðŸ“… Data:* ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(selectedDate)} Ã s ${reservationForm.hora}
-*ðŸ‘¥ Quantidade de pessoas:* ${quantity}
-*ðŸ“ ObservaÃ§Ãµes:* ${reservationForm.obs || 'Nenhuma'}
+    const text = `*🍽️ Nova Solicitação de Reserva*
+*👤 Nome:* ${reservationForm.nome}
+*📅 Data:* ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(selectedDate)} às ${reservationForm.hora}
+*👥 Quantidade de pessoas:* ${quantity}
+*📝 Observações:* ${reservationForm.obs || 'Nenhuma'}
 
-*âœ¨ Aguardamos vocÃªs para uma experiÃªncia incrÃ­vel!*`;
+*✨ Aguardamos vocês para uma experiência incrível!*`;
     
     setReservationSuccess(true);
     
@@ -766,6 +769,67 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('borgert_cart', JSON.stringify(cart));
   }, [cart]);
+
+  // Shake Detection for Birthday
+  useEffect(() => {
+    let lastX = 0, lastY = 0, lastZ = 0;
+    let threshold = 15; // Sensitivity
+    let lastUpdate = 0;
+
+    const handleMotion = (event: DeviceMotionEvent) => {
+      const acceleration = event.accelerationIncludingGravity;
+      if (!acceleration) return;
+
+      const curTime = Date.now();
+      if ((curTime - lastUpdate) > 100) {
+        const diffTime = curTime - lastUpdate;
+        lastUpdate = curTime;
+
+        const { x, y, z } = acceleration;
+        const speed = Math.abs((x || 0) + (y || 0) + (z || 0) - lastX - lastY - lastZ) / diffTime * 10000;
+
+        if (speed > threshold) {
+          // SHAKEN!
+          setIsBirthdayOpen(true);
+        }
+
+        lastX = x || 0;
+        lastY = y || 0;
+        lastZ = z || 0;
+      }
+    };
+
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', handleMotion);
+    }
+
+    return () => window.removeEventListener('devicemotion', handleMotion);
+  }, []);
+
+  // Launch confetti when birthday opens
+  useEffect(() => {
+    if (isBirthdayOpen) {
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 101 };
+
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+      const interval: any = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+      }, 250);
+
+      return () => clearInterval(interval);
+    }
+  }, [isBirthdayOpen]);
 
   // Fetch data from server
   useEffect(() => {
@@ -1055,7 +1119,10 @@ export default function App() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 flex flex-col items-center select-none"
+          className="mb-8 flex flex-col items-center select-none cursor-pointer"
+          onClick={(e) => {
+            if (e.detail === 3) setIsBirthdayOpen(true);
+          }}
         >
           <div className="relative w-[280px] h-[140px] flex justify-center overflow-visible">
             <svg viewBox="0 0 200 120" className="w-full h-full overflow-visible drop-shadow-md">
@@ -1468,8 +1535,92 @@ export default function App() {
       
       <footer className="mt-auto text-center py-10 safe-pb shrink-0">
         <div className="w-16 h-[1px] bg-theme-border mx-auto mb-6"></div>
-        <p className="text-theme-text-muted text-xs font-serif italic">Obrigado pela preferÃªncia!</p>
       </footer>
+
+      {/* Birthday Overlay (Mobile Only Trigger) */}
+      <AnimatePresence>
+        {isBirthdayOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-theme-bg/95 backdrop-blur-xl flex flex-col p-6 overflow-y-auto"
+          >
+            <div className="flex justify-end p-2">
+              <button 
+                onClick={() => setIsBirthdayOpen(false)}
+                className="p-3 bg-theme-card border border-theme-border rounded-full text-theme-text shadow-lg"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 max-w-md mx-auto py-8">
+              <motion.div
+                initial={{ scale: 0, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", bounce: 0.5 }}
+                className="w-24 h-24 bg-gradient-to-br from-pink-500 to-purple-600 rounded-3xl flex items-center justify-center text-white shadow-2xl"
+              >
+                <Cake size={48} />
+              </motion.div>
+
+              <div className="space-y-2">
+                <h2 className="text-4xl font-black text-theme-text font-serif italic tracking-tighter">Parabéns pra você!</h2>
+                <p className="text-theme-text-muted font-medium uppercase tracking-widest text-xs">Comemore o seu dia no Borgert</p>
+              </div>
+
+              <div className="w-full space-y-4 pt-4">
+                <h3 className="text-sm font-bold text-theme-text uppercase flex items-center justify-center gap-2">
+                  <Music size={16} /> 
+                  Peça o seu item de parabéns:
+                </h3>
+                
+                <div className="grid grid-cols-1 gap-3 w-full">
+                  {(() => {
+                    try {
+                      const items = JSON.parse(siteSettings.birthday_items);
+                      if (items.length === 0) return (
+                        <div className="p-8 text-center bg-theme-card border border-theme-border rounded-2xl italic text-theme-text-muted text-sm">
+                          O garçom já está vindo com a alegria! 🎂
+                        </div>
+                      );
+                      return items.map((item: any, idx: number) => (
+                        <motion.button
+                          key={idx}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            const text = `*🎂 PEDIDO DE ANIVERSÁRIO*\nQuero pedir: *${item.nome}* para o parabéns na minha mesa!`;
+                            window.open(`https://wa.me/${parsedWhatsappList[0]?.numero}?text=${encodeURIComponent(text)}`, '_blank');
+                          }}
+                          className="flex items-center gap-4 p-4 bg-theme-card border border-theme-border rounded-2xl hover:border-theme-accent transition-all text-left group"
+                        >
+                          {item.imagem ? (
+                            <img src={item.imagem} className="w-16 h-16 rounded-xl object-cover" />
+                          ) : (
+                            <div className="w-16 h-16 bg-theme-bg rounded-xl flex items-center justify-center text-theme-text-muted">
+                              <Gift size={24} />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <p className="font-bold text-theme-text">{item.nome}</p>
+                            <p className="text-xs text-theme-text-muted line-clamp-2">{item.desc}</p>
+                          </div>
+                          <ChevronRight size={16} className="text-theme-text-muted group-hover:text-theme-accent transition-colors" />
+                        </motion.button>
+                      ));
+                    } catch { return null; }
+                  })()}
+                </div>
+              </div>
+
+              <div className="pt-8 opacity-40 text-[10px] text-theme-text font-bold uppercase tracking-widest">
+                Aviso: Gire ou chacoalhe o aparelho para a mágica acontecer! 🪄
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* WhatsApp Floating Button & Menu */}
       <div className="fixed bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-4 md:left-8 z-40">
