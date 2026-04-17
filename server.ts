@@ -9,15 +9,31 @@ dotenv.config();
 const __dirname = process.cwd();
 
 // Supabase Setup
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'placeholder_key';
 
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+let supabase: any;
+try {
+  supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+} catch (e) {
+  console.error("Supabase init error:", e);
+}
 
 const app = express();
 app.use(express.json());
+
+// Add debug route to intercept missing keys
+app.use((req, res, next) => {
+  if (supabaseUrl === 'https://placeholder.supabase.co') {
+    return res.status(500).json({ 
+      error: 'Vercel Env Vars Missing!',
+      keys_found: Object.keys(process.env).filter(k => k.includes('VITE') || k.includes('SUPABASE'))
+    });
+  }
+  next();
+});
 
 // ============================================
 // API Routes - Reviews
