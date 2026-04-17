@@ -1,13 +1,27 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
-  Package, AlertTriangle, CheckCircle, Clock, ChevronDown,
-  ArrowUpCircle, ArrowDownCircle, MinusCircle, Loader2,
-  Search, Filter, Calendar, Save, FileText, ShoppingCart,
-  Wine, UtensilsCrossed, X
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { logAction } from '../lib/logger';
-import { supabase } from '../lib/supabase';
+  Package,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  ChevronDown,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  MinusCircle,
+  Loader2,
+  Search,
+  Filter,
+  Calendar,
+  Save,
+  FileText,
+  ShoppingCart,
+  Wine,
+  UtensilsCrossed,
+  X,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { logAction } from "../lib/logger";
+import { supabase } from "../lib/supabase";
 
 type Product = {
   id: string;
@@ -21,8 +35,8 @@ type StockEntry = {
   id: string;
   product_id: string;
   week_start: string;
-  urgency: 'alta' | 'media' | 'baixa' | 'ok';
-  status: 'pendente' | 'comprado' | 'não chegou';
+  urgency: "alta" | "media" | "baixa" | "ok";
+  status: "pendente" | "comprado" | "não chegou";
   quantity_estimate: number | null;
   notes: string;
   updated_by: string;
@@ -35,16 +49,63 @@ type StockControlProps = {
 };
 
 const URGENCY_CONFIG = {
-  alta: { label: 'Urgente', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/30', badge: 'bg-red-500 text-white', glow: 'shadow-red-500/30' },
-  media: { label: 'Médio', icon: ArrowUpCircle, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/30', badge: 'bg-amber-500 text-white', glow: 'shadow-amber-500/20' },
-  baixa: { label: 'Baixo', icon: ArrowDownCircle, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/30', badge: 'bg-blue-500 text-white', glow: '' },
-  ok: { label: 'OK', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/30', badge: 'bg-green-500 text-white', glow: '' },
+  alta: {
+    label: "Urgente",
+    icon: AlertTriangle,
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+    border: "border-red-500/30",
+    badge: "bg-red-500 text-white",
+    glow: "shadow-red-500/30",
+  },
+  media: {
+    label: "Médio",
+    icon: ArrowUpCircle,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/30",
+    badge: "bg-amber-500 text-white",
+    glow: "shadow-amber-500/20",
+  },
+  baixa: {
+    label: "Baixo",
+    icon: ArrowDownCircle,
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/30",
+    badge: "bg-blue-500 text-white",
+    glow: "",
+  },
+  ok: {
+    label: "OK",
+    icon: CheckCircle,
+    color: "text-green-500",
+    bg: "bg-green-500/10",
+    border: "border-green-500/30",
+    badge: "bg-green-500 text-white",
+    glow: "",
+  },
 };
 
 const STATUS_CONFIG = {
-  pendente: { label: 'Pendente', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  comprado: { label: 'Comprado', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10' },
-  'não chegou': { label: 'Não Chegou', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
+  pendente: {
+    label: "Pendente",
+    icon: Clock,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+  },
+  comprado: {
+    label: "Comprado",
+    icon: CheckCircle,
+    color: "text-green-500",
+    bg: "bg-green-500/10",
+  },
+  "não chegou": {
+    label: "Não Chegou",
+    icon: AlertTriangle,
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+  },
 };
 
 function getWeekStart(date: Date = new Date()): string {
@@ -53,16 +114,21 @@ function getWeekStart(date: Date = new Date()): string {
   const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
   d.setDate(diff);
   d.setHours(0, 0, 0, 0);
-  return d.toISOString().split('T')[0];
+  return d.toISOString().split("T")[0];
 }
 
-export default function StockControl({ userRole, userName }: StockControlProps) {
+export default function StockControl({
+  userRole,
+  userName,
+}: StockControlProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [stockEntries, setStockEntries] = useState<StockEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterUrgency, setFilterUrgency] = useState<string>('all');
-  const [editingEntries, setEditingEntries] = useState<Record<string, Partial<StockEntry>>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterUrgency, setFilterUrgency] = useState<string>("all");
+  const [editingEntries, setEditingEntries] = useState<
+    Record<string, Partial<StockEntry>>
+  >({});
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const [currentWeek, setCurrentWeek] = useState(getWeekStart());
   const [showOnlyBebidas, setShowOnlyBebidas] = useState(true);
@@ -72,7 +138,7 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
     setIsLoading(true);
     try {
       const [prodRes, stockRes] = await Promise.all([
-        fetch('/api/products'),
+        fetch("/api/products"),
         fetch(`/api/stock?week=${currentWeek}`),
       ]);
 
@@ -84,45 +150,50 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
         setStockEntries(await stockRes.json());
       }
     } catch (err) {
-      console.error('Failed to fetch stock data:', err);
+      console.error("Failed to fetch stock data:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, [currentWeek]);
+  useEffect(() => {
+    fetchData();
+  }, [currentWeek]);
 
   const stockMap = useMemo(() => {
     const map: Record<string, StockEntry> = {};
-    stockEntries.forEach(e => { map[e.product_id] = e; });
+    stockEntries.forEach((e) => {
+      map[e.product_id] = e;
+    });
     return map;
   }, [stockEntries]);
 
   // Filter products based on category toggle
   const categoryFilteredProducts = useMemo(() => {
     if (showOnlyBebidas) {
-      return products.filter(p => p.categoria === 'bebidas');
+      return products.filter((p) => p.categoria === "bebidas");
     }
     return products;
   }, [products, showOnlyBebidas]);
 
   const filteredProducts = useMemo(() => {
     return categoryFilteredProducts
-      .filter(p => {
-        const matchesSearch = p.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      .filter((p) => {
+        const matchesSearch =
+          p.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.categoria.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.subcategoria.toLowerCase().includes(searchQuery.toLowerCase());
-        
-        if (filterUrgency === 'all') return matchesSearch;
-        
+
+        if (filterUrgency === "all") return matchesSearch;
+
         const entry = stockMap[p.id];
-        if (filterUrgency === 'pendente') return matchesSearch && !entry;
+        if (filterUrgency === "pendente") return matchesSearch && !entry;
         return matchesSearch && entry?.urgency === filterUrgency;
       })
       .sort((a, b) => {
         const urgencyOrder = { alta: 0, media: 1, baixa: 2, ok: 3 };
-        const aUrgency = stockMap[a.id]?.urgency || 'ok';
-        const bUrgency = stockMap[b.id]?.urgency || 'ok';
+        const aUrgency = stockMap[a.id]?.urgency || "ok";
+        const bUrgency = stockMap[b.id]?.urgency || "ok";
         return (urgencyOrder[aUrgency] ?? 4) - (urgencyOrder[bUrgency] ?? 4);
       });
   }, [categoryFilteredProducts, searchQuery, filterUrgency, stockMap]);
@@ -130,14 +201,14 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
   // Shopping list: items that need to be purchased (alta + media)
   const shoppingList = useMemo(() => {
     return categoryFilteredProducts
-      .filter(p => {
+      .filter((p) => {
         const entry = stockMap[p.id];
-        return entry && (entry.urgency === 'alta' || entry.urgency === 'media');
+        return entry && (entry.urgency === "alta" || entry.urgency === "media");
       })
       .sort((a, b) => {
         const urgencyOrder = { alta: 0, media: 1, baixa: 2, ok: 3 };
-        const aUrgency = stockMap[a.id]?.urgency || 'ok';
-        const bUrgency = stockMap[b.id]?.urgency || 'ok';
+        const aUrgency = stockMap[a.id]?.urgency || "ok";
+        const bUrgency = stockMap[b.id]?.urgency || "ok";
         return (urgencyOrder[aUrgency] ?? 4) - (urgencyOrder[bUrgency] ?? 4);
       });
   }, [categoryFilteredProducts, stockMap]);
@@ -146,55 +217,56 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
     if (editingEntries[productId]?.[field] !== undefined) {
       return editingEntries[productId][field];
     }
-    return stockMap[productId]?.[field] ?? '';
+    return stockMap[productId]?.[field] ?? "";
   };
 
   const updateLocalEntry = (productId: string, field: string, value: any) => {
-    setEditingEntries(prev => ({
+    setEditingEntries((prev) => ({
       ...prev,
       [productId]: { ...prev[productId], [field]: value },
     }));
   };
 
   const saveEntry = async (productId: string) => {
-    setSavingIds(prev => new Set(prev).add(productId));
+    setSavingIds((prev) => new Set(prev).add(productId));
 
     const existing = stockMap[productId];
     const edits = editingEntries[productId] || {};
     const payload = {
       product_id: productId,
       week_start: currentWeek,
-      urgency: edits.urgency ?? existing?.urgency ?? 'ok',
-      status: edits.status ?? existing?.status ?? 'pendente',
-      quantity_estimate: edits.quantity_estimate ?? existing?.quantity_estimate ?? null,
-      notes: edits.notes ?? existing?.notes ?? '',
+      urgency: edits.urgency ?? existing?.urgency ?? "ok",
+      status: edits.status ?? existing?.status ?? "pendente",
+      quantity_estimate:
+        edits.quantity_estimate ?? existing?.quantity_estimate ?? null,
+      notes: edits.notes ?? existing?.notes ?? "",
       updated_by: userName,
     };
 
     try {
-      const method = existing ? 'PUT' : 'POST';
-      const url = existing ? `/api/stock/${existing.id}` : '/api/stock';
+      const method = existing ? "PUT" : "POST";
+      const url = existing ? `/api/stock/${existing.id}` : "/api/stock";
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-        // LOG ACTION
-        const product = products.find(p => p.id === productId);
-        await logAction({
-          user_id: '', // Supabase ID could be fetched if needed, but userName is used in the UI
-          user_name: userName,
-          action_type: 'estoque_edit',
-          description: `Alterou estoque: ${product?.nome || productId} (Status: ${payload.status}, Urgência: ${payload.urgency})`,
-          target_id: productId
-        });
+      // LOG ACTION
+      const product = products.find((p) => p.id === productId);
+      await logAction({
+        user_id: "", // Supabase ID could be fetched if needed, but userName is used in the UI
+        user_name: userName,
+        action_type: "estoque_edit",
+        description: `Alterou estoque: ${product?.nome || productId} (Status: ${payload.status}, Urgência: ${payload.urgency})`,
+        target_id: productId,
+      });
 
-        fetchData();
+      fetchData();
     } catch (err) {
-      console.error('Save stock error:', err);
+      console.error("Save stock error:", err);
     } finally {
-      setSavingIds(prev => {
+      setSavingIds((prev) => {
         const next = new Set(prev);
         next.delete(productId);
         return next;
@@ -204,7 +276,7 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
 
   const urgencyCounts = useMemo(() => {
     const counts = { alta: 0, media: 0, baixa: 0, ok: 0, pendente: 0 };
-    categoryFilteredProducts.forEach(p => {
+    categoryFilteredProducts.forEach((p) => {
       const entry = stockMap[p.id];
       if (!entry) counts.pendente++;
       else counts[entry.urgency]++;
@@ -213,23 +285,24 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
   }, [categoryFilteredProducts, stockMap]);
 
   const weekLabel = useMemo(() => {
-    const start = new Date(currentWeek + 'T00:00:00');
+    const start = new Date(currentWeek + "T00:00:00");
     const end = new Date(start);
     end.setDate(end.getDate() + 6);
-    const fmt = (d: Date) => d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    const fmt = (d: Date) =>
+      d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
     return `${fmt(start)} — ${fmt(end)}`;
   }, [currentWeek]);
 
   const goToPrevWeek = () => {
-    const d = new Date(currentWeek + 'T00:00:00');
+    const d = new Date(currentWeek + "T00:00:00");
     d.setDate(d.getDate() - 7);
-    setCurrentWeek(d.toISOString().split('T')[0]);
+    setCurrentWeek(d.toISOString().split("T")[0]);
   };
 
   const goToNextWeek = () => {
-    const d = new Date(currentWeek + 'T00:00:00');
+    const d = new Date(currentWeek + "T00:00:00");
     d.setDate(d.getDate() + 7);
-    setCurrentWeek(d.toISOString().split('T')[0]);
+    setCurrentWeek(d.toISOString().split("T")[0]);
   };
 
   const goToCurrentWeek = () => {
@@ -244,8 +317,12 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
       className="space-y-6"
     >
       <header>
-        <h2 className="text-3xl font-bold font-serif text-theme-text">Controle de Estoque</h2>
-        <p className="text-theme-text-muted">Gerencie a urgência de compra dos produtos semanalmente.</p>
+        <h2 className="text-3xl font-bold font-serif text-theme-text">
+          Controle de Estoque
+        </h2>
+        <p className="text-theme-text-muted">
+          Gerencie a urgência de compra dos produtos semanalmente.
+        </p>
       </header>
 
       {/* Category Filter Toggle */}
@@ -255,8 +332,8 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
             onClick={() => setShowOnlyBebidas(true)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
               showOnlyBebidas
-                ? 'bg-theme-accent text-white shadow-lg shadow-theme-accent/20'
-                : 'text-theme-text-muted hover:text-theme-text'
+                ? "bg-theme-accent text-white shadow-lg shadow-theme-accent/20"
+                : "text-theme-text-muted hover:text-theme-text"
             }`}
           >
             <Wine size={16} />
@@ -266,8 +343,8 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
             onClick={() => setShowOnlyBebidas(false)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
               !showOnlyBebidas
-                ? 'bg-theme-accent text-white shadow-lg shadow-theme-accent/20'
-                : 'text-theme-text-muted hover:text-theme-text'
+                ? "bg-theme-accent text-white shadow-lg shadow-theme-accent/20"
+                : "text-theme-text-muted hover:text-theme-text"
             }`}
           >
             <Package size={16} />
@@ -287,9 +364,24 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
           <span className="text-sm text-theme-text-muted">{weekLabel}</span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={goToPrevWeek} className="px-3 py-1.5 text-xs font-bold bg-theme-bg border border-theme-border rounded-lg hover:bg-theme-border/50 transition-all">← Anterior</button>
-          <button onClick={goToCurrentWeek} className="px-3 py-1.5 text-xs font-bold bg-theme-accent text-white rounded-lg hover:bg-theme-accent/90 transition-all">Atual</button>
-          <button onClick={goToNextWeek} className="px-3 py-1.5 text-xs font-bold bg-theme-bg border border-theme-border rounded-lg hover:bg-theme-border/50 transition-all">Próxima →</button>
+          <button
+            onClick={goToPrevWeek}
+            className="px-3 py-1.5 text-xs font-bold bg-theme-bg border border-theme-border rounded-lg hover:bg-theme-border/50 transition-all"
+          >
+            ← Anterior
+          </button>
+          <button
+            onClick={goToCurrentWeek}
+            className="px-3 py-1.5 text-xs font-bold bg-theme-accent text-white rounded-lg hover:bg-theme-accent/90 transition-all"
+          >
+            Atual
+          </button>
+          <button
+            onClick={goToNextWeek}
+            className="px-3 py-1.5 text-xs font-bold bg-theme-bg border border-theme-border rounded-lg hover:bg-theme-border/50 transition-all"
+          >
+            Próxima →
+          </button>
         </div>
       </div>
 
@@ -300,7 +392,9 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
             onClick={() => setShowShoppingList(!showShoppingList)}
             className="w-full"
           >
-            <div className={`bg-gradient-to-r from-red-500/10 via-amber-500/10 to-red-500/10 p-4 rounded-2xl border-2 border-red-500/30 flex items-center justify-between transition-all hover:border-red-500/50 ${urgencyCounts.alta > 0 ? 'animate-pulse-subtle' : ''}`}>
+            <div
+              className={`bg-gradient-to-r from-red-500/10 via-amber-500/10 to-red-500/10 p-4 rounded-2xl border-2 border-red-500/30 flex items-center justify-between transition-all hover:border-red-500/50 ${urgencyCounts.alta > 0 ? "animate-pulse-subtle" : ""}`}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
                   <ShoppingCart size={20} className="text-red-500" />
@@ -310,22 +404,31 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
                     🛒 Lista de Compras Urgente
                   </p>
                   <p className="text-xs text-theme-text-muted">
-                    {shoppingList.length} {shoppingList.length === 1 ? 'produto precisa' : 'produtos precisam'} ser comprado{shoppingList.length > 1 ? 's' : ''}
+                    {shoppingList.length}{" "}
+                    {shoppingList.length === 1
+                      ? "produto precisa"
+                      : "produtos precisam"}{" "}
+                    ser comprado{shoppingList.length > 1 ? "s" : ""}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {urgencyCounts.alta > 0 && (
                   <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-bounce">
-                    {urgencyCounts.alta} URGENTE{urgencyCounts.alta > 1 ? 'S' : ''}
+                    {urgencyCounts.alta} URGENTE
+                    {urgencyCounts.alta > 1 ? "S" : ""}
                   </span>
                 )}
                 {urgencyCounts.media > 0 && (
                   <span className="px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full">
-                    {urgencyCounts.media} MÉDIO{urgencyCounts.media > 1 ? 'S' : ''}
+                    {urgencyCounts.media} MÉDIO
+                    {urgencyCounts.media > 1 ? "S" : ""}
                   </span>
                 )}
-                <ChevronDown size={18} className={`text-theme-text-muted transition-transform ${showShoppingList ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  size={18}
+                  className={`text-theme-text-muted transition-transform ${showShoppingList ? "rotate-180" : ""}`}
+                />
               </div>
             </div>
           </button>
@@ -334,33 +437,40 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
             {showShoppingList && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
                 <div className="mt-3 space-y-2">
-                  {shoppingList.map(product => {
+                  {shoppingList.map((product) => {
                     const entry = stockMap[product.id];
-                    const urgency = entry?.urgency || 'ok';
+                    const urgency = entry?.urgency || "ok";
                     const config = URGENCY_CONFIG[urgency];
                     const Icon = config.icon;
 
                     return (
                       <div
                         key={product.id}
-                        className={`flex items-center justify-between p-3 rounded-xl border ${config.border} ${config.bg} transition-all ${urgency === 'alta' ? 'shadow-lg ' + config.glow : ''}`}
+                        className={`flex items-center justify-between p-3 rounded-xl border ${config.border} ${config.bg} transition-all ${urgency === "alta" ? "shadow-lg " + config.glow : ""}`}
                       >
                         <div className="flex items-center gap-3">
                           <Icon size={18} className={config.color} />
                           <div>
-                            <p className="text-sm font-bold text-theme-text">{product.nome}</p>
-                            <p className="text-[10px] text-theme-text-muted">{product.subcategoria}</p>
+                            <p className="text-sm font-bold text-theme-text">
+                              {product.nome}
+                            </p>
+                            <p className="text-[10px] text-theme-text-muted">
+                              {product.subcategoria}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           {entry?.quantity_estimate != null && (
                             <span className="text-xs text-theme-text-muted">
-                              Qtd: <span className="font-bold text-theme-text">{entry.quantity_estimate}</span>
+                              Qtd:{" "}
+                              <span className="font-bold text-theme-text">
+                                {entry.quantity_estimate}
+                              </span>
                             </span>
                           )}
                           {entry?.notes && (
@@ -368,7 +478,9 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
                               💬 {entry.notes}
                             </span>
                           )}
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${config.badge}`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${config.badge}`}
+                          >
                             {config.label}
                           </span>
                         </div>
@@ -389,37 +501,54 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
           return (
             <button
               key={key}
-              onClick={() => setFilterUrgency(filterUrgency === key ? 'all' : key)}
+              onClick={() =>
+                setFilterUrgency(filterUrgency === key ? "all" : key)
+              }
               className={`p-4 rounded-2xl border transition-all text-left ${
                 filterUrgency === key
                   ? `${config.bg} ${config.border} ring-2 ring-offset-2 ring-offset-theme-bg`
-                  : 'bg-theme-card border-theme-border hover:bg-theme-bg'
+                  : "bg-theme-card border-theme-border hover:bg-theme-bg"
               }`}
-              style={filterUrgency === key ? { ringColor: config.color.replace('text-', '') } : {}}
+              style={
+                filterUrgency === key
+                  ? { ringColor: config.color.replace("text-", "") }
+                  : {}
+              }
             >
               <Icon size={20} className={config.color} />
-              <p className="text-2xl font-bold text-theme-text mt-2">{urgencyCounts[key as keyof typeof urgencyCounts]}</p>
-              <p className="text-xs text-theme-text-muted font-medium">{config.label}</p>
+              <p className="text-2xl font-bold text-theme-text mt-2">
+                {urgencyCounts[key as keyof typeof urgencyCounts]}
+              </p>
+              <p className="text-xs text-theme-text-muted font-medium">
+                {config.label}
+              </p>
             </button>
           );
         })}
         <button
-          onClick={() => setFilterUrgency(filterUrgency === 'pendente' ? 'all' : 'pendente')}
+          onClick={() =>
+            setFilterUrgency(filterUrgency === "pendente" ? "all" : "pendente")
+          }
           className={`p-4 rounded-2xl border transition-all text-left ${
-            filterUrgency === 'pendente'
-              ? 'bg-theme-text-muted/10 border-theme-text-muted/30 ring-2 ring-offset-2 ring-offset-theme-bg'
-              : 'bg-theme-card border-theme-border hover:bg-theme-bg'
+            filterUrgency === "pendente"
+              ? "bg-theme-text-muted/10 border-theme-text-muted/30 ring-2 ring-offset-2 ring-offset-theme-bg"
+              : "bg-theme-card border-theme-border hover:bg-theme-bg"
           }`}
         >
           <Clock size={20} className="text-theme-text-muted" />
-          <p className="text-2xl font-bold text-theme-text mt-2">{urgencyCounts.pendente}</p>
+          <p className="text-2xl font-bold text-theme-text mt-2">
+            {urgencyCounts.pendente}
+          </p>
           <p className="text-xs text-theme-text-muted font-medium">Pendente</p>
         </button>
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-text-muted" size={20} />
+        <Search
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-text-muted"
+          size={20}
+        />
         <input
           type="text"
           placeholder="Buscar produto..."
@@ -436,46 +565,69 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredProducts.map(product => {
+          {filteredProducts.map((product) => {
             const entry = stockMap[product.id];
-            const urgency = (getEditValue(product.id, 'urgency') || 'ok') as keyof typeof URGENCY_CONFIG;
+            const urgency = (getEditValue(product.id, "urgency") ||
+              "ok") as keyof typeof URGENCY_CONFIG;
             const config = URGENCY_CONFIG[urgency] || URGENCY_CONFIG.ok;
             const Icon = config.icon;
             const hasEdits = !!editingEntries[product.id];
             const isSaving = savingIds.has(product.id);
-            const isUrgent = urgency === 'alta';
+            const isUrgent = urgency === "alta";
 
             return (
               <motion.div
                 key={product.id}
                 layout
-                className={`bg-theme-card rounded-2xl border ${config.border} p-4 md:p-5 transition-all ${isUrgent ? 'shadow-xl ' + config.glow + ' ring-1 ring-red-500/20' : ''}`}
+                className={`bg-theme-card rounded-2xl border ${config.border} p-4 md:p-5 transition-all ${isUrgent ? "shadow-xl " + config.glow + " ring-1 ring-red-500/20" : ""}`}
               >
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   {/* Product Info */}
                   <div className="flex items-center gap-3 md:w-1/4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg} ${isUrgent ? 'animate-pulse' : ''}`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg} ${isUrgent ? "animate-pulse" : ""}`}
+                    >
                       <Icon size={18} className={config.color} />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-theme-text text-sm truncate">{product.nome}</p>
-                      <p className="text-[10px] text-theme-text-muted">{product.categoria} › {product.subcategoria}</p>
+                      <p className="font-bold text-theme-text text-sm truncate">
+                        {product.nome}
+                      </p>
+                      <p className="text-[10px] text-theme-text-muted">
+                        {product.categoria} › {product.subcategoria}
+                      </p>
                     </div>
                   </div>
 
                   {/* Urgency Select (Custom Premium) */}
                   <div className="md:w-[15%] relative group">
-                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Urgência</label>
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">
+                      Urgência
+                    </label>
                     <div className="relative">
                       <select
                         value={urgency}
-                        onChange={(e) => updateLocalEntry(product.id, 'urgency', e.target.value)}
-                        className={`w-full bg-theme-bg/50 border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text appearance-none focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all cursor-pointer ${isUrgent ? 'border-red-500 text-red-500 bg-red-500/5' : 'border-theme-border'}`}
+                        onChange={(e) =>
+                          updateLocalEntry(
+                            product.id,
+                            "urgency",
+                            e.target.value,
+                          )
+                        }
+                        className={`w-full bg-theme-bg/50 border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text appearance-none focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all cursor-pointer ${isUrgent ? "border-red-500 text-red-500 bg-red-500/5" : "border-theme-border"}`}
                       >
-                        <option value="ok" className="bg-theme-card">✓ ESTOQUE OK</option>
-                        <option value="baixa" className="bg-theme-card">↓ REPOR LOGO</option>
-                        <option value="media" className="bg-theme-card">↑ MÉDIO - COMPRAR</option>
-                        <option value="alta" className="bg-theme-card">⚠ URGENTE!</option>
+                        <option value="ok" className="bg-theme-card">
+                          ✓ ESTOQUE OK
+                        </option>
+                        <option value="baixa" className="bg-theme-card">
+                          ↓ REPOR LOGO
+                        </option>
+                        <option value="media" className="bg-theme-card">
+                          ↑ MÉDIO - COMPRAR
+                        </option>
+                        <option value="alta" className="bg-theme-card">
+                          ⚠ URGENTE!
+                        </option>
                       </select>
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-theme-text-muted">
                         <ChevronDown size={14} />
@@ -485,17 +637,27 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
 
                   {/* Status Purchase (Custom Premium) */}
                   <div className="md:w-[18%]">
-                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Status Compra</label>
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">
+                      Status Compra
+                    </label>
                     <div className="relative">
                       <select
-                        disabled={userRole !== 'admin'}
-                        value={getEditValue(product.id, 'status') || 'pendente'}
-                        onChange={(e) => updateLocalEntry(product.id, 'status', e.target.value)}
-                        className={`w-full bg-theme-bg/50 border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text appearance-none focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all cursor-pointer ${userRole !== 'admin' ? 'opacity-50 grayscale' : 'border-theme-border'}`}
+                        disabled={userRole !== "admin"}
+                        value={getEditValue(product.id, "status") || "pendente"}
+                        onChange={(e) =>
+                          updateLocalEntry(product.id, "status", e.target.value)
+                        }
+                        className={`w-full bg-theme-bg/50 border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text appearance-none focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all cursor-pointer ${userRole !== "admin" ? "opacity-50 grayscale" : "border-theme-border"}`}
                       >
-                        <option value="pendente" className="bg-theme-card">⏳ PENDENTE</option>
-                        <option value="comprado" className="bg-theme-card">✅ COMPRADO</option>
-                        <option value="não chegou" className="bg-theme-card">❌ NÃO CHEGOU</option>
+                        <option value="pendente" className="bg-theme-card">
+                          ⏳ PENDENTE
+                        </option>
+                        <option value="comprado" className="bg-theme-card">
+                          ✅ COMPRADO
+                        </option>
+                        <option value="não chegou" className="bg-theme-card">
+                          ❌ NÃO CHEGOU
+                        </option>
                       </select>
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-theme-text-muted">
                         <ChevronDown size={14} />
@@ -505,12 +667,22 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
 
                   {/* Quantity */}
                   <div className="md:w-1/6">
-                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Qtd. em Estoque</label>
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">
+                      Qtd. em Estoque
+                    </label>
                     <input
                       type="number"
                       min={0}
-                      value={getEditValue(product.id, 'quantity_estimate') ?? ''}
-                      onChange={(e) => updateLocalEntry(product.id, 'quantity_estimate', e.target.value ? parseInt(e.target.value) : null)}
+                      value={
+                        getEditValue(product.id, "quantity_estimate") ?? ""
+                      }
+                      onChange={(e) =>
+                        updateLocalEntry(
+                          product.id,
+                          "quantity_estimate",
+                          e.target.value ? parseInt(e.target.value) : null,
+                        )
+                      }
                       placeholder="—"
                       className="w-full bg-theme-bg/50 border border-theme-border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all placeholder:text-theme-text-muted/30"
                     />
@@ -518,11 +690,15 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
 
                   {/* Notes */}
                   <div className="flex-1">
-                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">Observação</label>
+                    <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">
+                      Observação
+                    </label>
                     <input
                       type="text"
-                      value={getEditValue(product.id, 'notes') ?? ''}
-                      onChange={(e) => updateLocalEntry(product.id, 'notes', e.target.value)}
+                      value={getEditValue(product.id, "notes") ?? ""}
+                      onChange={(e) =>
+                        updateLocalEntry(product.id, "notes", e.target.value)
+                      }
                       placeholder="Ex: Acabou ontem..."
                       className="w-full bg-theme-bg/50 border border-theme-border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all placeholder:text-theme-text-muted/30"
                     />
@@ -535,11 +711,15 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
                       disabled={isSaving || (!hasEdits && !!entry)}
                       className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
                         hasEdits
-                          ? 'bg-theme-accent text-white hover:scale-105 shadow-lg shadow-theme-accent/20'
-                          : 'bg-theme-bg border border-theme-border text-theme-text-muted'
+                          ? "bg-theme-accent text-white hover:scale-105 shadow-lg shadow-theme-accent/20"
+                          : "bg-theme-bg border border-theme-border text-theme-text-muted"
                       } disabled:opacity-40`}
                     >
-                      {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                      {isSaving ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Save size={14} />
+                      )}
                       Salvar
                     </button>
                   </div>
@@ -548,7 +728,8 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
                 {/* Last update info */}
                 {entry?.updated_at && (
                   <p className="text-[10px] text-theme-text-muted mt-2 pl-13">
-                    Atualizado por {entry.updated_by || '—'} em {new Date(entry.updated_at).toLocaleString('pt-BR')}
+                    Atualizado por {entry.updated_by || "—"} em{" "}
+                    {new Date(entry.updated_at).toLocaleString("pt-BR")}
                   </p>
                 )}
               </motion.div>
