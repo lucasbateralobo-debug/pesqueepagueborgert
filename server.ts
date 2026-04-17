@@ -1,13 +1,18 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
+// dynamic import used later
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let __dirname = '';
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  __dirname = path.dirname(__filename);
+} catch (e) {
+  __dirname = process.cwd();
+}
 
 // Supabase Setup
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -336,6 +341,7 @@ export default app;
 // Run Vite locally if not in production
 if (process.env.NODE_ENV !== 'production') {
   async function startServer() {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -349,7 +355,9 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
   // If run as a node script in production
   app.use(express.static(path.join(__dirname, 'dist')));
-  if (import.meta.url === `file://${process.argv[1]}`) {
-    app.listen(3000, () => console.log('Server running on port 3000'));
-  }
+  try {
+    if (import.meta.url === `file://${process.argv[1]}`) {
+      app.listen(3000, () => console.log('Server running on port 3000'));
+    }
+  } catch (e) {}
 }
