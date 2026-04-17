@@ -1,0 +1,17 @@
+{
+  "name": "Borgert",
+  "short_name": "Borgert",
+  "description": "Pesque e Pague Borgert - Cardápio e Reservas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c41e3a",
+  "icons": [
+    {
+      "src": "/logo-borgert.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
