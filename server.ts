@@ -6,13 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-let __dirname = '';
-try {
-  const __filename = fileURLToPath(import.meta.url);
-  __dirname = path.dirname(__filename);
-} catch (e) {
-  __dirname = process.cwd();
-}
+const __dirname = process.cwd();
 
 // Supabase Setup
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -355,9 +349,4 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
   // If run as a node script in production
   app.use(express.static(path.join(__dirname, 'dist')));
-  try {
-    if (import.meta.url === `file://${process.argv[1]}`) {
-      app.listen(3000, () => console.log('Server running on port 3000'));
-    }
-  } catch (e) {}
-}
+// Local running is handled via "npm run dev" or export over Vercel natively.
