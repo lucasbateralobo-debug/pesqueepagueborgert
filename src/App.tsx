@@ -1128,7 +1128,7 @@ export default function App() {
              <img 
                src="/logo-borgert.png" 
                alt="Borgert Logo" 
-               className="w-full h-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] transition-all"
+               className="w-full h-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.1)] dark:brightness-110 dark:filter dark:drop-shadow-[0_0_1px_#fff] dark:drop-shadow-[0_0_1px_#fff] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] transition-all"
              />
           </div>
         </motion.div>
@@ -1257,7 +1257,7 @@ export default function App() {
             }`}
           >
             <UtensilsCrossed size={20} />
-            <span className="tracking-wide text-sm md:text-base">CardÃ¡pio</span>
+            <span className="tracking-wide text-sm md:text-base">Cardápio</span>
           </button>
           <button
             onClick={() => handleCategoryChange('bebidas')}
@@ -1862,15 +1862,15 @@ export default function App() {
                     <UtensilsCrossed size={48} className="text-theme-accent/50" strokeWidth={1.5} />
                   </div>
                 </div>
-                <h3 className="text-2xl font-serif font-bold text-theme-text mb-2">Seu pedido estÃ¡ vazio</h3>
+                <h3 className="text-2xl font-serif font-bold text-theme-text mb-2">Seu pedido está vazio</h3>
                 <p className="text-theme-text-muted text-sm md:text-base max-w-[250px] mx-auto leading-relaxed">
-                  Que tal explorar nosso cardÃ¡pio e adicionar algumas delÃ­cias?
+                  Que tal explorar nosso cardápio e adicionar algumas delícias?
                 </p>
                 <button 
                   onClick={() => setIsCartOpen(false)}
                   className="mt-8 px-8 py-3 bg-theme-bg border-2 border-theme-accent text-theme-accent rounded-xl font-semibold hover:bg-theme-accent hover:text-white transition-colors duration-200 active:scale-95"
                 >
-                  Ver CardÃ¡pio
+                  Ver Cardápio
                 </button>
               </div>
             ) : (
