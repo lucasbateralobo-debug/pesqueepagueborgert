@@ -191,7 +191,6 @@ export default function StockControl({ userRole, userName }: StockControlProps) 
         });
 
         fetchData();
-      }
     } catch (err) {
       console.error('Save stock error:', err);
     } finally {
