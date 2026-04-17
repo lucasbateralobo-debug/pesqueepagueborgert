@@ -23,7 +23,8 @@ import {
   Shield,
   Loader2,
   Cake,
-  Gift
+  Gift,
+  Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './lib/supabase';
@@ -682,109 +683,43 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
-                  <header>
-                    <h2 className="text-3xl font-bold font-serif text-theme-text">Configuração de Aniversário</h2>
-                    <p className="text-theme-text-muted">Gerencie os itens disponíveis para comemorações na mesa.</p>
+                  <header className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-bold font-serif text-theme-text">Configuração de Aniversário</h2>
+                      <p className="text-theme-text-muted">Gerencie os itens disponíveis para comemorações na mesa através do sistema de produtos.</p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setEditingProduct({...defaultProduct, categoria: 'aniversario'});
+                        setIsProductModalOpen(true);
+                      }}
+                      className="bg-theme-accent text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg"
+                    >
+                      <Plus size={20} /> Novo Item Aniversário
+                    </button>
                   </header>
                   
-                  {(() => {
-                    const birthdayItems = (() => {
-                      try {
-                        const items = JSON.parse(settings.birthday_items);
-                        return Array.isArray(items) ? items : [];
-                      } catch { return []; }
-                    })();
-
-                    const updateItem = (index: number, key: string, value: string) => {
-                      const newList = [...birthdayItems];
-                      newList[index][key] = value;
-                      setSettings({...settings, birthday_items: JSON.stringify(newList)});
-                    };
-
-                    const addItem = () => {
-                      const newList = [...birthdayItems, { nome: '', desc: '', preco: 0, imagem: '' }];
-                      setSettings({...settings, birthday_items: JSON.stringify(newList)});
-                    };
-
-                    const removeItem = (index: number) => {
-                      const newList = birthdayItems.filter((_, i) => i !== index);
-                      setSettings({...settings, birthday_items: JSON.stringify(newList)});
-                    };
-
-                    return (
-                      <div className="space-y-6 max-w-3xl">
-                        <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm space-y-4">
-                          <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-theme-text">Itens de Parabéns</h3>
-                            <button 
-                              onClick={addItem}
-                              className="bg-theme-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2"
-                            >
-                              <Plus size={18} /> Adicionar Item
-                            </button>
-                          </div>
-
-                          <div className="space-y-4">
-                            {birthdayItems.map((item, index) => (
-                              <div key={index} className="bg-theme-bg/50 p-4 rounded-2xl border border-theme-border flex gap-4">
-                                <div className="flex-1 space-y-3">
-                                  <input 
-                                    type="text" 
-                                    value={item.nome}
-                                    onChange={(e) => updateItem(index, 'nome', e.target.value)}
-                                    placeholder="Nome do prato/item (Ex: Bolo de Chocolate)"
-                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text font-bold"
-                                  />
-                                  <input 
-                                    type="text" 
-                                    value={item.desc}
-                                    onChange={(e) => updateItem(index, 'desc', e.target.value)}
-                                    placeholder="Descrição (Ex: Ideal para 5 pessoas)"
-                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-sm"
-                                  />
-                                  <div className="flex gap-3">
-                                    <input 
-                                      type="number" 
-                                      value={item.preco}
-                                      onChange={(e) => updateItem(index, 'preco', e.target.value)}
-                                      placeholder="Preço (Ex: 45.90)"
-                                      className="w-1/3 bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-sm"
-                                    />
-                                    <input 
-                                      type="text" 
-                                      value={item.imagem}
-                                      onChange={(e) => updateItem(index, 'imagem', e.target.value)}
-                                      placeholder="URL da Imagem"
-                                      className="flex-1 bg-theme-card border border-theme-border rounded-xl px-4 py-2 text-theme-text text-xs"
-                                    />
-                                  </div>
-                                </div>
-                                <button 
-                                  onClick={() => removeItem(index)}
-                                  className="self-start p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                                >
-                                  <Trash2 size={20} />
-                                </button>
-                              </div>
-                            ))}
-                            {birthdayItems.length === 0 && (
-                              <div className="text-center py-12 text-theme-text-muted bg-theme-bg/20 rounded-2xl border-2 border-dashed border-theme-border">
-                                <Cake size={48} className="mx-auto mb-4 opacity-20" />
-                                <p>Nenhum item cadastrado para aniversário.</p>
-                              </div>
-                            )}
-                          </div>
-
-                          <button 
-                            onClick={updateSettings}
-                            className="w-full bg-theme-accent text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-6"
-                          >
-                            <Save size={20} /> Salvar Lista de Aniversário
-                          </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {products.filter(p => p.categoria === 'aniversario').map(product => (
+                      <div key={product.id} className="bg-theme-card border border-theme-border rounded-[2rem] p-4 flex gap-4 items-center">
+                        <div className="w-16 h-16 rounded-2xl bg-theme-bg overflow-hidden flex-shrink-0">
+                          {product.imagem ? (
+                            <img src={product.imagem} className="w-full h-full object-cover" />
+                          ) : (
+                            <Cake className="w-full h-full p-4 text-theme-text-muted opacity-20" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-theme-text truncate">{product.nome}</h4>
+                          <p className="text-xs text-theme-text-muted truncate">{formatCurrency(product.preco)}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => { setEditingProduct(product); setIsProductModalOpen(true); }} className="p-2 text-theme-text-muted hover:text-theme-accent transition-all"><Edit2 size={18} /></button>
+                          <button onClick={() => deleteProduct(product.id)} className="p-2 text-theme-text-muted hover:text-red-500 transition-all"><Trash2 size={18} /></button>
                         </div>
                       </div>
-                    );
-                  })()}
+                    ))}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -854,6 +789,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                       >
                         <option value="comidas">Comidas</option>
                         <option value="bebidas">Bebidas</option>
+                        <option value="aniversario">Aniversário 🎂</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -871,14 +807,55 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-theme-text">URL da Imagem</label>
-                      <input 
-                        type="text" 
-                        value={editingProduct.imagem}
-                        onChange={(e) => setEditingProduct({...editingProduct, imagem: e.target.value})}
-                        className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:border-theme-accent transition-all"
-                        placeholder="https://..."
-                      />
+                      <label className="text-sm font-bold text-theme-text">Imagem do Produto</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="https://..."
+                          value={editingProduct.imagem}
+                          onChange={(e) => setEditingProduct({...editingProduct, imagem: e.target.value})}
+                          className="flex-1 bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:border-theme-accent transition-all"
+                        />
+                        <div className="relative">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              
+                              const target = e.target.parentElement?.querySelector('button') as HTMLButtonElement;
+                              if (target) target.disabled = true;
+                              
+                              try {
+                                const fileExt = file.name.split('.').pop();
+                                const fileName = `${Math.random()}.${fileExt}`;
+                                const filePath = `products/${fileName}`;
+
+                                const { error: uploadError } = await supabase.storage
+                                  .from('products')
+                                  .upload(filePath, file);
+
+                                if (uploadError) throw uploadError;
+
+                                const { data: { publicUrl } } = supabase.storage
+                                  .from('products')
+                                  .getPublicUrl(filePath);
+
+                                setEditingProduct({...editingProduct, imagem: publicUrl});
+                              } catch (err: any) {
+                                alert('Erro ao subir foto: ' + err.message);
+                              } finally {
+                                if (target) target.disabled = false;
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer z-20"
+                          />
+                          <button type="button" className="bg-theme-bg border border-theme-border p-3 rounded-xl hover:bg-theme-accent/10 transition-all text-theme-accent relative z-10">
+                            <Upload size={20} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-theme-text">Descrição</label>
