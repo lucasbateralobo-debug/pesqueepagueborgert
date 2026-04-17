@@ -822,72 +822,19 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                             accept="image/*"
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
-                              if (!file || !editingProduct.nome) {
-                                if (!editingProduct.nome) alert('Por favor, defina o nome do produto antes de subir a foto para aplicar a marca d\'água.');
-                                return;
-                              }
+                              if (!file) return;
                               
-                              const targetButtons = e.target.parentElement?.querySelectorAll('button');
-                              targetButtons?.forEach(b => b.disabled = true);
+                              const target = e.target.parentElement?.querySelector('button') as HTMLButtonElement;
+                              if (target) target.disabled = true;
                               
                               try {
-                                // 1. WATERMARK PROCESSING
-                                const watermarkImage = async (file: File, name: string): Promise<Blob> => {
-                                  return new Promise((resolve, reject) => {
-                                    const img = new Image();
-                                    img.src = URL.createObjectURL(file);
-                                    img.onload = () => {
-                                      const canvas = document.createElement('canvas');
-                                      const ctx = canvas.getContext('2d');
-                                      if (!ctx) return reject('Canvas error');
-                                      
-                                      canvas.width = img.width;
-                                      canvas.height = img.height;
-                                      ctx.drawImage(img, 0, 0);
-                                      
-                                      // Premium Watermark Bar
-                                      const barHeight = canvas.height * 0.12;
-                                      const fontSize = Math.floor(barHeight * 0.4);
-                                      
-                                      // Gradient Background for text
-                                      const grad = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-                                      grad.addColorStop(0, 'rgba(0,0,0,0)');
-                                      grad.addColorStop(1, 'rgba(0,0,0,0.8)');
-                                      ctx.fillStyle = grad;
-                                      ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
-                                      
-                                      // Text Style
-                                      ctx.font = `bold ${fontSize}px "Inter", sans-serif`;
-                                      ctx.fillStyle = 'white';
-                                      ctx.textAlign = 'center';
-                                      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                                      ctx.shadowBlur = 10;
-                                      
-                                      // Draw Name + Brand
-                                      ctx.fillText(name.toUpperCase(), canvas.width / 2, canvas.height - (barHeight / 2.5));
-                                      ctx.font = `${fontSize * 0.5}px "Inter", sans-serif`;
-                                      ctx.globalAlpha = 0.7;
-                                      ctx.fillText("BORGERT PESQUE E PAGUE", canvas.width / 2, canvas.height - (barHeight / 10));
-                                      
-                                      canvas.toBlob((blob) => {
-                                        if (blob) resolve(blob); else reject('Blob error');
-                                      }, 'image/jpeg', 0.85);
-                                    };
-                                    img.onerror = reject;
-                                  });
-                                };
-
-                                const watermarkedBlob = await watermarkImage(file, editingProduct.nome);
-                                const fileExt = 'jpg'; 
-                                const fileName = `${Date.now()}.${fileExt}`;
+                                const fileExt = file.name.split('.').pop();
+                                const fileName = `${Math.random()}.${fileExt}`;
                                 const filePath = `products/${fileName}`;
 
-                                // 2. UPLOAD TO SUPABASE
                                 const { error: uploadError } = await supabase.storage
                                   .from('products')
-                                  .upload(filePath, watermarkedBlob, {
-                                    contentType: 'image/jpeg'
-                                  });
+                                  .upload(filePath, file);
 
                                 if (uploadError) throw uploadError;
 
@@ -897,9 +844,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
                                 setEditingProduct({...editingProduct, imagem: publicUrl});
                               } catch (err: any) {
-                                alert('Erro ao processar/subir foto: ' + err.message);
+                                alert('Erro ao subir foto: ' + err.message);
                               } finally {
-                                targetButtons?.forEach(b => b.disabled = false);
+                                if (target) target.disabled = false;
                               }
                             }}
                             className="absolute inset-0 opacity-0 cursor-pointer z-20"

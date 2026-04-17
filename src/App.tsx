@@ -504,16 +504,23 @@ const ProductCard = React.memo(({ item, icon: Icon, onAdd, onOpenDetails, isSoph
                     <Icon size={32} className="text-theme-text-muted opacity-50" />
                   </div>
                 )}
-                <img 
-                  src={imagem} 
-                  alt={nome} 
-                  className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`} 
-                  referrerPolicy="no-referrer" 
-                  loading="lazy" 
-                  decoding="async"
-                  onLoad={() => setIsImageLoaded(true)}
-                />
-              </>
+                 <img 
+                   src={imagem} 
+                   alt={nome} 
+                   className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`} 
+                   referrerPolicy="no-referrer" 
+                   loading="lazy" 
+                   decoding="async"
+                   onLoad={() => setIsImageLoaded(true)}
+                 />
+                 
+                 {/* TAG DE IDENTIFICAÇÃO (Inside the system) */}
+                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent pt-8 select-none">
+                    <p className="text-white text-xs font-bold uppercase tracking-widest text-center drop-shadow-sm truncate">
+                      {nome}
+                    </p>
+                 </div>
+               </>
             ) : (
               <>
                 <div className="absolute inset-0 flex items-center justify-center text-theme-text-muted opacity-30">
