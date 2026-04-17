@@ -538,6 +538,35 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
+                  {(() => {
+                    const parsedWhatsappList = (() => {
+                      try {
+                        const list = JSON.parse(settings.whatsapp);
+                        return Array.isArray(list) ? list : [{ nome: 'Atendimento', numero: settings.whatsapp }];
+                      } catch {
+                        return [{ nome: 'Atendimento', numero: settings.whatsapp || '' }];
+                      }
+                    })();
+
+                    const updateWhatsappNumber = (index: number, key: string, value: string) => {
+                      const newList = [...parsedWhatsappList];
+                      newList[index][key] = value;
+                      setSettings({...settings, whatsapp: JSON.stringify(newList)});
+                    };
+
+                    const addWhatsappNumber = () => {
+                      const newList = [...parsedWhatsappList, { nome: '', numero: '' }];
+                      setSettings({...settings, whatsapp: JSON.stringify(newList)});
+                    };
+
+                    const removeWhatsappNumber = (index: number) => {
+                      const newList = parsedWhatsappList.filter((_, i) => i !== index);
+                      if (newList.length === 0) newList.push({ nome: 'Atendimento', numero: '' });
+                      setSettings({...settings, whatsapp: JSON.stringify(newList)});
+                    };
+
+                    return (
+                      <React.Fragment>
                   <header>
                     <h2 className="text-3xl font-bold font-serif text-theme-text">Configurações</h2>
                     <p className="text-theme-text-muted">Ajuste os canais de contato e regras do site.</p>
@@ -545,19 +574,54 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   
                   <form onSubmit={updateSettings} className="bg-theme-card p-8 rounded-3xl border border-theme-border shadow-sm max-w-2xl space-y-8">
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-sm font-bold text-theme-text">WhatsApp de Reservas</label>
-                          <input 
-                            type="text" 
-                            value={settings.whatsapp}
-                            onChange={(e) => setSettings({...settings, whatsapp: e.target.value})}
-                            placeholder="Ex: 5511999999999"
-                            className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:border-theme-accent transition-all"
-                          />
-                          <p className="text-[10px] text-theme-text-muted">Inclua o 55 (Brasil) e o DDD.</p>
+                      <div className="grid grid-cols-1 gap-6">
+                        <div className="space-y-4">
+                          <label className="text-sm font-bold text-theme-text flex justify-between items-center">
+                            <span>WhatsApp de Reservas / Contatos</span>
+                            <button 
+                              type="button" 
+                              onClick={addWhatsappNumber}
+                              className="text-xs bg-theme-accent/10 text-theme-accent px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-theme-accent/20 transition-all font-medium"
+                            >
+                              <Plus size={14} /> Adicionar Número
+                            </button>
+                          </label>
+                          <div className="space-y-3">
+                            {parsedWhatsappList.map((wa, index) => (
+                              <div key={index} className="flex flex-col md:flex-row items-end gap-3 bg-theme-bg/50 p-4 rounded-xl border border-theme-border">
+                                <div className="w-full">
+                                  <label className="text-xs font-bold text-theme-text-muted mb-1 block">Nome do Contato (Ex: Garçom, Recepção)</label>
+                                  <input 
+                                    type="text" 
+                                    value={wa.nome}
+                                    onChange={(e) => updateWhatsappNumber(index, 'nome', e.target.value)}
+                                    placeholder="Ex: Pedro / Recepção"
+                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:border-theme-accent transition-all"
+                                  />
+                                </div>
+                                <div className="w-full">
+                                  <label className="text-xs font-bold text-theme-text-muted mb-1 block">Número c/ DDD (Ex: 5511999999999)</label>
+                                  <input 
+                                    type="text" 
+                                    value={wa.numero}
+                                    onChange={(e) => updateWhatsappNumber(index, 'numero', e.target.value)}
+                                    placeholder="Ex: 5511999999999"
+                                    className="w-full bg-theme-card border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:border-theme-accent transition-all"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeWhatsappNumber(index)}
+                                  className="p-3 bg-theme-card border border-theme-border rounded-xl text-red-500 hover:bg-red-500/10 transition-colors"
+                                >
+                                  <Trash2 size={20} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-theme-text-muted">A pessoa escolherá para qual destes enviar a reserva, caso configure mais de um.</p>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 mt-4 pt-4 border-t border-theme-border">
                           <label className="text-sm font-bold text-theme-text">Máximo de Pessoas (Reserva)</label>
                           <input 
                             type="number" 
@@ -578,6 +642,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                       Salvar Alterações
                     </button>
                   </form>
+                  </React.Fragment>
+                  );
+                  })()}
                 </motion.div>
               )}
 

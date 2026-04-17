@@ -612,8 +612,18 @@ export default function App() {
     hora: '',
     nome: '',
     quantidade: '',
-    obs: ''
+    obs: '',
+    contato_id: '0'
   });
+
+  const parsedWhatsappList = useMemo(() => {
+    try {
+      const list = JSON.parse(siteSettings.whatsapp);
+      return Array.isArray(list) && list.length > 0 ? list : [{ nome: 'Atendimento', numero: siteSettings.whatsapp || '5511999999999' }];
+    } catch {
+      return [{ nome: 'Atendimento', numero: siteSettings.whatsapp || '5511999999999' }];
+    }
+  }, [siteSettings.whatsapp]);
   const [reservationError, setReservationError] = useState('');
   const [reservationSuccess, setReservationSuccess] = useState(false);
   const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
@@ -680,8 +690,15 @@ export default function App() {
   }, [reservationForm.data]);
 
   const whatsappOptions = [
-    { id: 'reservas', label: 'Reservas de Mesa', icon: Calendar, type: 'form' },
-    { id: 'eventos', label: 'Eventos e Contato', icon: Users, type: 'whatsapp', message: 'Olá! Gostaria de informações sobre eventos e outras dúvidas.' },
+    { id: 'reservas', label: 'Fazer Reserva', icon: Calendar, type: 'form' },
+    ...parsedWhatsappList.map((wa, idx) => ({
+      id: `contato-${idx}`,
+      label: `Falar com ${wa.nome}`,
+      icon: Users,
+      type: 'whatsapp',
+      message: 'Olá! Gostaria de informações.',
+      numero: wa.numero
+    }))
   ];
 
   const handleReservationSubmit = (e: React.FormEvent) => {
@@ -726,11 +743,14 @@ export default function App() {
     
     setReservationSuccess(true);
     
+    const selectedContact = parsedWhatsappList[parseInt(reservationForm.contato_id, 10)] || parsedWhatsappList[0];
+    const targetNumber = selectedContact.numero;
+
     setTimeout(() => {
-      window.open(`https://wa.me/${siteSettings.whatsapp}?text=${encodeURIComponent(text)}`, '_blank');
+      window.open(`https://wa.me/${targetNumber}?text=${encodeURIComponent(text)}`, '_blank');
       setIsReservationModalOpen(false);
       setReservationSuccess(false);
-      setReservationForm({ data: '', hora: '', nome: '', quantidade: '', obs: '' });
+      setReservationForm({ data: '', hora: '', nome: '', quantidade: '', obs: '', contato_id: '0' });
     }, 2000);
   };
 
@@ -1608,6 +1628,22 @@ export default function App() {
                       placeholder="Alguma preferência ou restrição?"
                     />
                   </div>
+                  
+                  {parsedWhatsappList.length > 1 && (
+                    <div>
+                      <label htmlFor="contato" className="block text-sm font-medium text-theme-text mb-1.5">Enviar pedido para:</label>
+                      <select
+                        id="contato"
+                        value={reservationForm.contato_id}
+                        onChange={(e) => setReservationForm({...reservationForm, contato_id: e.target.value})}
+                        className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/50 focus:border-theme-accent transition-all appearance-none"
+                      >
+                        {parsedWhatsappList.map((contact, index) => (
+                          <option key={index} value={index.toString()}>{contact.nome}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   
                   <button
                     type="submit"
