@@ -260,6 +260,59 @@ app.put('/api/stock/:id', async (req, res) => {
   res.json(data);
 });
 
+app.post('/api/stock/deduct', async (req, res) => {
+  const { items, source } = req.body; // items: { product_id, quantity }[]
+  
+  // Helper to get week start (Monday)
+  const getWeekStart = (date = new Date()) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString().split('T')[0];
+  };
+  
+  const current_week = getWeekStart();
+  const results = [];
+
+  for (const item of items) {
+    const { product_id, quantity } = item;
+    if (!product_id) continue;
+
+    // Check if exists for this week
+    const { data: existing } = await supabase.from('stock_entries')
+      .select('*')
+      .eq('product_id', product_id)
+      .eq('week_start', current_week)
+      .single();
+
+    if (existing) {
+      const newQty = (existing.quantity_estimate || 0) - quantity;
+      const { data, error } = await supabase.from('stock_entries')
+        .update({ 
+          quantity_estimate: newQty, 
+          updated_at: new Date().toISOString(), 
+          updated_by: source || 'Sistema' 
+        })
+        .eq('id', existing.id)
+        .select().single();
+      results.push({ product_id, success: !error });
+    } else {
+      const { data, error } = await supabase.from('stock_entries').insert([{
+        product_id,
+        week_start: current_week,
+        quantity_estimate: -quantity,
+        urgency: 'ok',
+        updated_by: source || 'Sistema'
+      }]).select().single();
+      results.push({ product_id, success: !error });
+    }
+  }
+
+  res.json({ success: true, results });
+});
+
 // ============================================
 // API Routes - Employees
 // ============================================

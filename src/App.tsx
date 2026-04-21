@@ -35,6 +35,7 @@ type Category = {
 
 
 type CartItem = {
+  id: string;
   nome: string;
   preco: number;
   quantidade: number;
@@ -945,7 +946,7 @@ export default function App() {
           i.nome === nomeCompleto ? { ...i, quantidade: i.quantidade + 1 } : i
         );
       }
-      return [...prev, { nome: nomeCompleto, preco: item.preco, quantidade: 1, imagem: item.imagem }];
+      return [...prev, { id: item.id, nome: nomeCompleto, preco: item.preco, quantidade: 1, imagem: item.imagem }];
     });
     
     // Trigger cart pulse animation
@@ -1982,7 +1983,21 @@ export default function App() {
                   </div>
                   
                   <button
-                    onClick={() => {
+                    onClick={async () => {
+                      // Deduct Stock
+                      try {
+                        await fetch('/api/stock/deduct', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            items: cart.map(item => ({ product_id: item.id, quantity: item.quantidade })),
+                            source: 'Pedido Cliente'
+                          })
+                        });
+                      } catch (err) {
+                        console.error('Stock deduction error:', err);
+                      }
+
                       setCart([]);
                       localStorage.removeItem('borgert_cart');
                       setIsOrderSummaryOpen(false);

@@ -155,6 +155,20 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
       });
 
       if (res.ok) {
+        // Deduct Stock
+        try {
+          await fetch('/api/stock/deduct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: [{ product_id: selectedProduct, quantity }],
+              source: `Consumo: ${employees.find(e => e.id === selectedEmployee)?.nome || 'Funcionário'}`
+            })
+          });
+        } catch (err) {
+          console.error('Stock deduction error:', err);
+        }
+
         // LOG ACTION
         const emp = employees.find(e => e.id === selectedEmployee);
         const prod = products.find(p => p.id === selectedProduct);
