@@ -106,6 +106,15 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: any }> = {
   history: { label: "Histórico", icon: FileText },
 };
 
+function getWeekStart(date: Date = new Date()): string {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString().split("T")[0];
+}
+
 export default function Admin({ onBack }: { onBack: () => void }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -123,6 +132,28 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [editingStock, setEditingStock] = useState<number | "">("");
+
+  useEffect(() => {
+    if (isProductModalOpen && editingProduct?.id) {
+      const fetchStock = async () => {
+        try {
+          const week = getWeekStart();
+          const res = await fetch(`/api/stock?week=${week}`);
+          if (res.ok) {
+            const data = await res.json();
+            const entry = data.find((e: any) => e.product_id === editingProduct.id);
+            setEditingStock(entry ? entry.quantity_estimate ?? "" : "");
+          }
+        } catch (err) {
+          console.error("Error fetching product stock:", err);
+        }
+      };
+      fetchStock();
+    } else {
+      setEditingStock("");
+    }
+  }, [isProductModalOpen, editingProduct?.id]);
 
   const defaultProduct: Omit<Product, "id"> = {
     nome: "",
@@ -265,6 +296,26 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       });
 
       if (res.ok) {
+        const savedProduct = await res.json();
+
+        // Save Stock if provided
+        if (editingStock !== "") {
+          try {
+            await fetch("/api/stock", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                product_id: savedProduct.id,
+                week_start: getWeekStart(),
+                quantity_estimate: Number(editingStock),
+                updated_by: currentUser?.nome || currentUser?.email || "Admin",
+              }),
+            });
+          } catch (err) {
+            console.error("Error saving stock from product modal:", err);
+          }
+        }
+
         // LOG ACTION
         await logAction({
           user_id: currentUser?.id || "",
@@ -273,8 +324,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             editingProduct.categoria === "aniversario"
               ? "aniversario_edit"
               : "produto_edit",
-          description: `Atualizou produto: ${editingProduct.nome}`,
-          target_id: editingProduct.id,
+          description: `Atualizou produto e estoque: ${editingProduct.nome}`,
+          target_id: savedProduct.id,
         });
 
         setIsProductModalOpen(false);
@@ -1278,6 +1329,26 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                         className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:border-theme-accent transition-all"
                         placeholder="Ex: Porções, Vinhos, Massas..."
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-theme-text flex items-center gap-2">
+                        <Boxes size={14} className="text-theme-accent" />
+                        Estoque Atual (Semana)
+                      </label>
+                      <input
+                        type="number"
+                        value={editingStock}
+                        onChange={(e) =>
+                          setEditingStock(
+                            e.target.value === "" ? "" : Number(e.target.value),
+                          )
+                        }
+                        className="w-full bg-theme-bg border border-theme-border rounded-xl px-4 py-3 text-theme-text focus:outline-none focus:border-theme-accent transition-all"
+                        placeholder="Qtd em estoque..."
+                      />
+                      <p className="text-[10px] text-theme-text-muted italic">
+                        * Atualiza o controle de estoque da semana atual.
+                      </p>
                     </div>
                   </div>
 
