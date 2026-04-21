@@ -1266,7 +1266,7 @@ export default function App() {
                             e.stopPropagation();
                             addToCart(item);
                           }}
-                          className="w-9 h-9 rounded-full bg-theme-accent text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-theme-accent/20"
+                          className="w-9 h-9 rounded-full bg-theme-accent text-white flex items-center justify-center tap-feedback btn-no-select hover:scale-110 active:scale-95 transition-all shadow-lg shadow-theme-accent/20"
                         >
                           <Plus size={18} />
                         </button>
@@ -1299,7 +1299,7 @@ export default function App() {
           />
           <button
             onClick={() => handleCategoryChange('comidas')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full font-bold transition-all duration-300 relative z-10 active:scale-[0.95] ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full font-bold transition-all duration-300 relative z-10 tap-feedback btn-no-select ${
               activeCategory === 'comidas' ? 'text-theme-bg' : 'text-theme-text-muted hover:text-theme-text'
             }`}
           >
@@ -1308,7 +1308,7 @@ export default function App() {
           </button>
           <button
             onClick={() => handleCategoryChange('bebidas')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full font-bold transition-all duration-300 relative z-10 active:scale-[0.95] ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full font-bold transition-all duration-300 relative z-10 tap-feedback btn-no-select ${
               activeCategory === 'bebidas' ? 'text-theme-bg' : 'text-theme-text-muted hover:text-theme-accent'
             }`}
           >
@@ -1341,7 +1341,7 @@ export default function App() {
       </div>
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 md:px-12 py-4 flex flex-col overflow-hidden relative">
-        <div className="flex-1 flex flex-col w-full h-full">
+        <div className="flex-1 flex flex-col w-full h-full scroll-optimize">
           {/* Search Results */}
           {searchQuery.trim() !== "" || selectedTags.length > 0 && searchQuery.trim() !== "" ? (
             <section className="flex flex-col h-full">
@@ -1967,45 +1967,44 @@ export default function App() {
               <span className="text-theme-text-muted font-semibold uppercase tracking-widest text-xs mb-1">Subtotal</span>
               <span className="text-3xl font-serif text-theme-accent font-bold leading-none">{formatCurrency(subtotal)}</span>
             </div>
-             <button 
-              onClick={async () => {
-                // 1. Deduct Stock
-                try {
-                  const itemsToDeduct = cart.map(item => {
-                    if (item.id) return { product_id: item.id, quantity: item.quantidade };
-                    // Fallback for items from old localStorage without ID
-                    const prod = products.find(p => p.nome === item.nome || item.nome.startsWith(p.nome));
-                    return { product_id: prod?.id, quantity: item.quantidade };
-                  }).filter(item => item.product_id);
+              <button 
+                onClick={async () => {
+                  // 1. Deduct Stock
+                  try {
+                    const itemsToDeduct = cart.map(item => {
+                      if (item.id) return { product_id: item.id, quantity: item.quantidade };
+                      const prod = products.find(p => p.nome === item.nome || item.nome.startsWith(p.nome));
+                      return { product_id: prod?.id, quantity: item.quantidade };
+                    }).filter(item => item.product_id);
 
-                  if (itemsToDeduct.length > 0) {
-                    await fetch('/api/stock/deduct', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        items: itemsToDeduct,
-                        source: 'Pedido Cliente'
-                      })
-                    });
+                    if (itemsToDeduct.length > 0) {
+                      await fetch('/api/stock/deduct', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          items: itemsToDeduct,
+                          source: 'Pedido Cliente'
+                        })
+                      });
+                    }
+                  } catch (err) {
+                    console.error('Stock deduction error:', err);
                   }
-                } catch (err) {
-                  console.error('Stock deduction error:', err);
-                }
 
-                // 2. Save to History (4.5h)
-                const historyData = {
-                  items: [...cart],
-                  total: subtotal,
-                  timestamp: Date.now()
-                };
-                localStorage.setItem('borgert_order_history', JSON.stringify(historyData));
-                setLocalOrderHistory(historyData);
+                  // 2. Save to History (4.5h)
+                  const historyData = {
+                    items: [...cart],
+                    total: subtotal,
+                    timestamp: Date.now()
+                  };
+                  localStorage.setItem('borgert_order_history', JSON.stringify(historyData));
+                  setLocalOrderHistory(historyData);
 
-                setIsCartOpen(false);
-                setIsOrderSummaryOpen(true);
-              }}
-              className="w-full bg-theme-text text-theme-bg py-4 rounded-2xl font-bold uppercase tracking-widest transition-all duration-150 flex items-center justify-center space-x-2 shadow-lg hover:bg-theme-accent hover:text-white text-lg active:scale-[0.98]"
-            >
+                  setIsCartOpen(false);
+                  setIsOrderSummaryOpen(true);
+                }}
+                className="w-full bg-theme-text text-theme-bg py-4 rounded-2xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg text-lg tap-feedback btn-no-select"
+              >
               <Check size={20} className="mr-1" />
               <span>Concluir Pedido</span>
             </button>

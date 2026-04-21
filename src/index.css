@@ -119,5 +119,25 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
   }
+
+  .tap-feedback {
+    @apply active:scale-95 active:opacity-80 transition-all duration-150;
+  }
+
+  .btn-no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .scroll-optimize {
+    will-change: scroll-position;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Optimize Framer Motion Layering */
+.framer-motion-layer {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
