@@ -501,8 +501,6 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
                 onChange={(e) => setFilterDate(e.target.value)}
                 className="bg-theme-card border border-theme-border rounded-xl px-4 py-3 text-sm text-theme-text focus:outline-none focus:border-theme-accent transition-all"
               />
-            </div>
-
             {/* Consumption List */}
             <div className="bg-theme-card rounded-3xl border border-theme-border shadow-sm overflow-hidden">
               {filteredConsumptions.length === 0 ? (
@@ -512,77 +510,123 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
                   <p className="text-sm">Ajuste os filtros ou registre um novo consumo.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-theme-bg/50 border-b border-theme-border">
-                        <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Funcionário</th>
-                        <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Produto</th>
-                        <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Qtd</th>
-                        <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Valor</th>
-                        <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Data</th>
-                        <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider text-right">Ação</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-theme-border">
-                      {filteredConsumptions.map(c => (
-                        <tr key={c.id} className="hover:bg-theme-bg/30 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                                <User size={14} className="text-purple-500" />
+                <React.Fragment>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-theme-bg/50 border-b border-theme-border">
+                          <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Funcionário</th>
+                          <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Produto</th>
+                          <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Qtd</th>
+                          <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Valor</th>
+                          <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">Data</th>
+                          <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider text-right">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-theme-border">
+                        {filteredConsumptions.map(c => (
+                          <tr key={c.id} className="hover:bg-theme-bg/30 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                  <User size={14} className="text-purple-500" />
+                                </div>
+                                <span className="font-bold text-sm text-theme-text">{c.employee_nome}</span>
                               </div>
-                              <span className="font-bold text-sm text-theme-text">{c.employee_nome}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-sm text-theme-text">{c.product_nome}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-sm font-bold text-theme-text">{c.quantidade}x</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-sm font-bold text-theme-accent">
+                                {formatCurrency((c.product_preco || 0) * c.quantidade)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-xs text-theme-text-muted">
+                                {new Date(c.data).toLocaleDateString('pt-BR')}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => toggleConsumptionPaid(c.id, c.pago)}
+                                  title={c.pago ? "Marcar como Pendente" : "Dar Baixa (Pago)"}
+                                  className={`p-2 rounded-lg transition-all ${
+                                    c.pago 
+                                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' 
+                                      : 'text-theme-text-muted hover:text-green-500 hover:bg-green-500/10'
+                                  } ${userRole !== 'admin' ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                >
+                                  {c.pago ? <Check size={16} strokeWidth={3} /> : <FileText size={16} />}
+                                </button>
+                                {userRole === 'admin' && (
+                                  <button
+                                    onClick={() => deleteConsumption(c.id)}
+                                    className="p-2 text-theme-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Cards */}
+                  <div className="md:hidden divide-y divide-theme-border">
+                    {filteredConsumptions.map(c => (
+                      <div key={c.id} className="p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                              <User size={14} className="text-purple-500" />
                             </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm text-theme-text">{c.product_nome}</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm font-bold text-theme-text">{c.quantidade}x</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm font-bold text-theme-accent">
-                              {formatCurrency((c.product_preco || 0) * c.quantidade)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-xs text-theme-text-muted">
-                              {new Date(c.data).toLocaleDateString('pt-BR')}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              {/* DAR BAIXA (Admin Only) */}
-                              <button
+                            <span className="font-bold text-sm text-theme-text">{c.employee_nome}</span>
+                          </div>
+                          <span className="text-[10px] text-theme-text-muted uppercase font-bold tracking-widest">
+                            {new Date(c.data).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center bg-theme-bg/50 p-3 rounded-xl border border-theme-border/50">
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-theme-text truncate">{c.quantidade}x {c.product_nome}</p>
+                            <p className="text-xs font-black text-theme-accent mt-0.5">{formatCurrency((c.product_preco || 0) * c.quantidade)}</p>
+                          </div>
+                          <div className="flex gap-2">
+                             <button
                                 onClick={() => toggleConsumptionPaid(c.id, c.pago)}
-                                title={c.pago ? "Marcar como Pendente" : "Dar Baixa (Pago)"}
-                                className={`p-2 rounded-lg transition-all ${
+                                className={`p-2.5 rounded-xl transition-all tap-feedback ${
                                   c.pago 
-                                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' 
-                                    : 'text-theme-text-muted hover:text-green-500 hover:bg-green-500/10'
+                                    ? 'bg-green-500 text-white' 
+                                    : 'bg-theme-card border border-theme-border text-theme-text-muted hover:text-green-500'
                                 } ${userRole !== 'admin' ? 'opacity-40 cursor-not-allowed' : ''}`}
                               >
-                                {c.pago ? <Check size={16} strokeWidth={3} /> : <FileText size={16} />}
+                                {c.pago ? <Check size={18} strokeWidth={3} /> : <FileText size={18} />}
                               </button>
-
-                              {/* REMOVER (Admin Only) */}
                               {userRole === 'admin' && (
                                 <button
                                   onClick={() => deleteConsumption(c.id)}
-                                  className="p-2 text-theme-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                  className="p-2.5 bg-theme-card border border-theme-border rounded-xl text-red-500 tap-feedback"
                                 >
-                                  <Trash2 size={16} />
+                                  <Trash2 size={18} />
                                 </button>
                               )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </React.Fragment>
               )}
+            </div>  )}
             </div>
           </motion.div>
         )}

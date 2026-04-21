@@ -1235,10 +1235,11 @@ export default function Admin({ onBack }: { onBack: () => void }) {
               className="absolute inset-0 bg-theme-overlay/90 backdrop-blur-md"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 100 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-theme-card w-full max-w-2xl max-h-[90vh] rounded-3xl border border-theme-border shadow-2xl overflow-hidden flex flex-col"
+              exit={{ opacity: 0, scale: 0.95, y: 100 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative bg-theme-card w-full max-w-2xl h-full md:h-auto md:max-h-[90vh] rounded-t-[2.5rem] md:rounded-3xl border-t md:border border-theme-border shadow-2xl overflow-hidden flex flex-col"
             >
               <div className="p-6 border-b border-theme-border flex justify-between items-center shrink-0">
                 <h3 className="text-xl font-bold text-theme-text">

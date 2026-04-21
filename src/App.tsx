@@ -1122,7 +1122,7 @@ export default function App() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="mb-8 flex flex-col items-center select-none pointer-events-none"
         >
-          <div className="relative w-full max-w-[280px] md:max-w-[400px] flex items-center justify-center">
+          <div className="relative w-full max-w-[200px] md:max-w-[400px] flex items-center justify-center">
              {/* FEIXE DE LUZ DE FUNDO (Glow background for dark mode) */}
              <div 
                className="absolute inset-0 blur-[60px] opacity-0 dark:opacity-100 transition-opacity duration-1000 scale-125"
@@ -1385,17 +1385,16 @@ export default function App() {
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                   className="flex flex-col h-full"
                 >
-                  {/* Subcategory Navigation */}
-                  <div className="mb-10 px-2">
-                    <div className="flex flex-wrap justify-center gap-2 md:gap-3 pb-2">
+                  <div className="mb-6 px-1 overflow-hidden">
+                    <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-4 scroll-smooth snap-x">
                       {comidas.map((cat, idx) => (
                         <button
                           key={idx}
                           onClick={() => handleSubcategoryChange(cat.subcategoria)}
-                          className={`px-5 py-2.5 rounded-2xl text-xs md:text-sm font-semibold transition-all duration-150 border active:scale-95 ${
+                          className={`shrink-0 snap-start px-6 py-3 rounded-2xl text-xs font-bold transition-all duration-150 border tap-feedback btn-no-select ${
                             activeSubcategory === cat.subcategoria
-                              ? 'bg-theme-accent text-white border-theme-accent shadow-[0_4px_15px_rgba(0,0,0,0.1)]'
-                              : 'bg-theme-card text-theme-text-muted border-theme-border hover:border-theme-accent/50 hover:text-theme-accent'
+                              ? 'bg-theme-accent text-white border-theme-accent shadow-lg shadow-theme-accent/20'
+                              : 'bg-theme-card text-theme-text-muted border-theme-border'
                           }`}
                         >
                           {cat.subcategoria}

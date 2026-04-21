@@ -121,7 +121,12 @@
   }
 
   .tap-feedback {
-    @apply active:scale-95 active:opacity-80 transition-all duration-150;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  }
+
+  .tap-feedback:active {
+    transform: scale(0.96);
   }
 
   .btn-no-select {
@@ -130,6 +135,14 @@
   }
 
   .scroll-optimize {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    backface-visibility: hidden;
+    perspective: 1000;
+    transform: translateZ(0);
     will-change: scroll-position;
     -webkit-overflow-scrolling: touch;
   }
