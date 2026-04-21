@@ -269,9 +269,9 @@ app.put('/api/stock/:id', async (req, res) => {
 });
 
 app.post('/api/stock/deduct', async (req, res) => {
-  const { items, source } = req.body; // items: { product_id, quantity }[]
+  const { items, source } = req.body; 
+  console.log(`[Stock] Deducting stock for source: ${source}`, items);
   
-  // Helper to get week start (Monday)
   const getWeekStart = (date = new Date()) => {
     const d = new Date(date);
     const day = d.getDay();
@@ -284,37 +284,55 @@ app.post('/api/stock/deduct', async (req, res) => {
   const current_week = getWeekStart();
   const results = [];
 
+  // Group items by product_id to avoid multiple updates to same row in one request
+  const groupedItems: Record<string, number> = {};
   for (const item of items) {
-    const { product_id, quantity } = item;
-    if (!product_id) continue;
+    if (item.product_id) {
+      groupedItems[item.product_id] = (groupedItems[item.product_id] || 0) + item.quantity;
+    }
+  }
 
-    // Check if exists for this week
-    const { data: existing } = await supabase.from('stock_entries')
-      .select('*')
-      .eq('product_id', product_id)
-      .eq('week_start', current_week)
-      .single();
+  for (const [product_id, quantity] of Object.entries(groupedItems)) {
+    try {
+      const { data: existing, error: findError } = await supabase.from('stock_entries')
+        .select('*')
+        .eq('product_id', product_id)
+        .eq('week_start', current_week)
+        .maybeSingle();
 
-    if (existing) {
-      const newQty = (existing.quantity_estimate || 0) - quantity;
-      const { data, error } = await supabase.from('stock_entries')
-        .update({ 
-          quantity_estimate: newQty, 
-          updated_at: new Date().toISOString(), 
-          updated_by: source || 'Sistema' 
-        })
-        .eq('id', existing.id)
-        .select().single();
-      results.push({ product_id, success: !error });
-    } else {
-      const { data, error } = await supabase.from('stock_entries').insert([{
-        product_id,
-        week_start: current_week,
-        quantity_estimate: -quantity,
-        urgency: 'ok',
-        updated_by: source || 'Sistema'
-      }]).select().single();
-      results.push({ product_id, success: !error });
+      if (findError) {
+        console.error(`[Stock] Error finding entry for ${product_id}:`, findError.message);
+        results.push({ product_id, success: false, error: findError.message });
+        continue;
+      }
+
+      if (existing) {
+        const newQty = (Number(existing.quantity_estimate) || 0) - quantity;
+        const { error: updateError } = await supabase.from('stock_entries')
+          .update({ 
+            quantity_estimate: newQty, 
+            updated_at: new Date().toISOString(), 
+            updated_by: source || 'Sistema' 
+          })
+          .eq('id', existing.id);
+        
+        if (updateError) console.error(`[Stock] Update error for ${product_id}:`, updateError.message);
+        results.push({ product_id, success: !updateError });
+      } else {
+        const { error: insertError } = await supabase.from('stock_entries').insert([{
+          product_id,
+          week_start: current_week,
+          quantity_estimate: -quantity,
+          urgency: 'ok',
+          updated_by: source || 'Sistema'
+        }]);
+        
+        if (insertError) console.error(`[Stock] Insert error for ${product_id}:`, insertError.message);
+        results.push({ product_id, success: !insertError });
+      }
+    } catch (err: any) {
+      console.error(`[Stock] Unexpected error for ${product_id}:`, err.message);
+      results.push({ product_id, success: false, error: err.message });
     }
   }
 

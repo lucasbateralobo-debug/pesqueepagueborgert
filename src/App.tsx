@@ -1960,7 +1960,7 @@ export default function App() {
 
           <div className="p-5 md:p-8 border-t border-theme-border bg-theme-card safe-pb shrink-0 rounded-t-3xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-10">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-theme-text-muted font-medium text-sm">Total de Itens</span>
+                      <span className="text-theme-text-muted font-medium text-sm">Total de Itens</span>
               <span className="text-theme-text font-bold">{totalItems}</span>
             </div>
             <div className="flex justify-between items-end mb-5">
@@ -1971,14 +1971,23 @@ export default function App() {
               onClick={async () => {
                 // 1. Deduct Stock
                 try {
-                  await fetch('/api/stock/deduct', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      items: cart.map(item => ({ product_id: item.id, quantity: item.quantidade })),
-                      source: 'Pedido Cliente'
-                    })
-                  });
+                  const itemsToDeduct = cart.map(item => {
+                    if (item.id) return { product_id: item.id, quantity: item.quantidade };
+                    // Fallback for items from old localStorage without ID
+                    const prod = products.find(p => p.nome === item.nome || item.nome.startsWith(p.nome));
+                    return { product_id: prod?.id, quantity: item.quantidade };
+                  }).filter(item => item.product_id);
+
+                  if (itemsToDeduct.length > 0) {
+                    await fetch('/api/stock/deduct', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        items: itemsToDeduct,
+                        source: 'Pedido Cliente'
+                      })
+                    });
+                  }
                 } catch (err) {
                   console.error('Stock deduction error:', err);
                 }
