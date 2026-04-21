@@ -583,36 +583,44 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   </header>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm">
-                      <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4">
-                        <Package className="text-blue-500" size={24} />
+                    <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm flex flex-col justify-center">
+                      <div className="w-10 h-10 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-3">
+                        <Package className="text-blue-500" size={20} />
                       </div>
-                      <h3 className="text-3xl font-bold text-theme-text">
+                      <h3 className="text-2xl md:text-3xl font-bold text-theme-text">
                         {products.length}
                       </h3>
-                      <p className="text-theme-text-muted text-sm font-medium">
+                      <p className="text-theme-text-muted text-[10px] uppercase tracking-wider font-bold">
                         Produtos Cadastrados
                       </p>
                     </div>
-                    <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm">
-                      <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
-                        <MessageSquare className="text-green-500" size={24} />
+                    <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm flex flex-col justify-center">
+                      <div className="w-10 h-10 bg-green-500/10 rounded-2xl flex items-center justify-center mb-3">
+                        <MessageSquare className="text-green-500" size={20} />
                       </div>
-                      <h3 className="text-3xl font-bold text-theme-text">
-                        {settings.whatsapp.replace(/^55/, "")}
+                      <h3 className="text-xl md:text-2xl font-bold text-theme-text truncate px-1">
+                        {(() => {
+                          try {
+                            const list = JSON.parse(settings.whatsapp);
+                            if (Array.isArray(list)) return `${list.length} Contatos`;
+                            return String(settings.whatsapp).replace(/^55/, "");
+                          } catch {
+                            return String(settings.whatsapp).replace(/^55/, "");
+                          }
+                        })()}
                       </h3>
-                      <p className="text-theme-text-muted text-sm font-medium">
+                      <p className="text-theme-text-muted text-[10px] uppercase tracking-wider font-bold">
                         WhatsApp Ativo
                       </p>
                     </div>
-                    <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm">
-                      <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-4">
-                        <Package className="text-purple-500" size={24} />
+                    <div className="bg-theme-card p-6 rounded-3xl border border-theme-border shadow-sm flex flex-col justify-center">
+                      <div className="w-10 h-10 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-3">
+                        <Package className="text-purple-500" size={20} />
                       </div>
-                      <h3 className="text-3xl font-bold text-theme-text">
+                      <h3 className="text-2xl md:text-3xl font-bold text-theme-text">
                         {products.filter((p) => p.oculto).length}
                       </h3>
-                      <p className="text-theme-text-muted text-sm font-medium">
+                      <p className="text-theme-text-muted text-[10px] uppercase tracking-wider font-bold">
                         Itens Ocultos
                       </p>
                     </div>
