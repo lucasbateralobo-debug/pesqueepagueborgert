@@ -926,7 +926,6 @@ export default function App() {
     setSearchQuery("");
     setSelectedTags([]);
     setTimeout(() => setIsLoading(false), 300);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [comidas, bebidas]);
 
   // Handle subcategory switching with skeleton loading
@@ -936,7 +935,6 @@ export default function App() {
       setIsLoading(true);
       setSelectedTags([]);
       setTimeout(() => setIsLoading(false), 300);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       return subcat;
     });
   }, []);
@@ -1070,7 +1068,7 @@ export default function App() {
   return (
     <div className={`min-h-screen bg-theme-bg text-theme-text ${isSophisticatedMode ? 'font-serif' : 'font-sans'} selection:bg-theme-accent selection:text-white relative flex flex-col w-full overflow-x-hidden transition-colors duration-500 ${isSophisticatedMode ? 'theme-sophisticated' : ''}`} style={{ backgroundImage: 'radial-gradient(circle at top right, var(--color-theme-accent)/0.03, transparent 40%)' }}>
       {/* Header */}
-      <header className="safe-pt pb-12 flex flex-col items-center justify-center text-center px-4 shrink-0 relative overflow-hidden">
+      <header className="safe-pt pb-4 flex flex-col items-center justify-center text-center px-4 shrink-0 relative overflow-hidden">
         {/* Animated Background Glow */}
         <motion.div 
           animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
@@ -1120,7 +1118,7 @@ export default function App() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 flex flex-col items-center select-none pointer-events-none"
+          className="mb-2 flex flex-col items-center select-none pointer-events-none"
         >
           <div className="relative w-full max-w-[200px] md:max-w-[400px] flex items-center justify-center">
              {/* FEIXE DE LUZ DE FUNDO (Glow background for dark mode) */}
