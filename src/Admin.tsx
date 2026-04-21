@@ -26,6 +26,7 @@ import {
   Gift,
   Upload,
   FileText,
+  Copy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "./lib/supabase";
@@ -120,6 +121,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const defaultProduct: Omit<Product, "id"> = {
     nome: "",
@@ -303,6 +306,85 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     } catch (error) {
       console.error("Delete product error:", error);
     }
+  };
+
+  const duplicateProduct = async (product: Product) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...productData } = product;
+    const newProduct = {
+      ...productData,
+      nome: `${product.nome} (Cópia)`,
+    };
+
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProduct),
+      });
+
+      if (res.ok) {
+        // LOG ACTION
+        await logAction({
+          user_id: currentUser?.id || "",
+          user_name: currentUser?.nome || currentUser?.email || "Unknown",
+          action_type: "produto_edit",
+          description: `Duplicou produto: ${product.nome}`,
+          target_id: "",
+        });
+        fetchData();
+      }
+    } catch (err) {
+      console.error("Duplicate product error:", err);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (
+      !confirm(
+        `Tem certeza que deseja excluir ${selectedProductIds.length} produtos selecionados?`,
+      )
+    )
+      return;
+
+    setIsBulkDeleting(true);
+    try {
+      const res = await fetch("/api/products-bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedProductIds }),
+      });
+
+      if (res.ok) {
+        await logAction({
+          user_id: currentUser?.id || "",
+          user_name: currentUser?.nome || currentUser?.email || "Unknown",
+          action_type: "produto_delete",
+          description: `Excluiu ${selectedProductIds.length} produtos em massa`,
+          target_id: "bulk",
+        });
+        setSelectedProductIds([]);
+        fetchData();
+      }
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedProductIds.length === filteredProducts.length) {
+      setSelectedProductIds([]);
+    } else {
+      setSelectedProductIds(filteredProducts.map((p) => p.id));
+    }
+  };
+
+  const toggleSelectProduct = (id: string) => {
+    setSelectedProductIds((prev) =>
+      prev.includes(id) ? prev.filter((pId) => pId !== id) : [...prev, id],
+    );
   };
 
   const updateSettings = async (e: React.FormEvent) => {
@@ -595,16 +677,32 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                         Gerencie o seu cardápio completo.
                       </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        setEditingProduct(defaultProduct as any);
-                        setIsProductModalOpen(true);
-                      }}
-                      className="bg-theme-accent text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-theme-accent/20"
-                    >
-                      <Plus size={20} />
-                      Novo Produto
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {selectedProductIds.length > 0 && (
+                        <button
+                          onClick={handleBulkDelete}
+                          disabled={isBulkDeleting}
+                          className="bg-red-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
+                        >
+                          {isBulkDeleting ? (
+                            <Loader2 size={18} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={18} />
+                          )}
+                          Excluir ({selectedProductIds.length})
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditingProduct(defaultProduct as any);
+                          setIsProductModalOpen(true);
+                        }}
+                        className="bg-theme-accent text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-theme-accent/20"
+                      >
+                        <Plus size={20} />
+                        Novo Produto
+                      </button>
+                    </div>
                   </header>
 
                   <div className="relative mb-6">
@@ -624,8 +722,20 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   <div className="bg-theme-card rounded-3xl border border-theme-border shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
-                        <thead>
+                          <thead>
                           <tr className="bg-theme-bg/50 border-b border-theme-border">
+                            <th className="px-6 py-4 w-10">
+                              <input
+                                type="checkbox"
+                                checked={
+                                  selectedProductIds.length ===
+                                    filteredProducts.length &&
+                                  filteredProducts.length > 0
+                                }
+                                onChange={toggleSelectAll}
+                                className="w-4 h-4 rounded border-theme-border text-theme-accent focus:ring-theme-accent"
+                              />
+                            </th>
                             <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">
                               Item
                             </th>
@@ -638,17 +748,25 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                             <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider">
                               Status
                             </th>
-                            <th className="px-6 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider text-right">
+                            <th className="px-1 py-4 text-xs font-bold text-theme-text-muted uppercase tracking-wider text-right">
                               Ações
                             </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-theme-border">
                           {filteredProducts.map((p) => (
-                            <tr
+                             <tr
                               key={p.id}
-                              className="hover:bg-theme-bg/30 transition-colors"
+                              className={`hover:bg-theme-bg/30 transition-colors ${selectedProductIds.includes(p.id) ? "bg-theme-accent/5" : ""}`}
                             >
+                              <td className="px-6 py-4">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedProductIds.includes(p.id)}
+                                  onChange={() => toggleSelectProduct(p.id)}
+                                  className="w-4 h-4 rounded border-theme-border text-theme-accent focus:ring-theme-accent"
+                                />
+                              </td>
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-lg bg-theme-bg border border-theme-border overflow-hidden shrink-0">
@@ -664,8 +782,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                                       </div>
                                     )}
                                   </div>
-                                  <div>
-                                    <p className="font-bold text-theme-text text-sm">
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-theme-text text-sm truncate">
                                       {p.nome}
                                     </p>
                                     <p className="text-[10px] text-theme-text-muted truncate max-w-[150px]">
@@ -695,22 +813,31 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                                   </span>
                                 )}
                               </td>
-                              <td className="px-6 py-4 text-right">
-                                <div className="flex items-center justify-end gap-2">
+                              <td className="px-1 py-4 text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    onClick={() => duplicateProduct(p)}
+                                    title="Duplicar"
+                                    className="p-1.5 text-theme-text-muted hover:text-theme-accent hover:bg-theme-accent/10 rounded-lg transition-all"
+                                  >
+                                    <Copy size={16} />
+                                  </button>
                                   <button
                                     onClick={() => {
                                       setEditingProduct(p);
                                       setIsProductModalOpen(true);
                                     }}
-                                    className="p-2 text-theme-text-muted hover:text-theme-accent hover:bg-theme-accent/10 rounded-lg transition-all"
+                                    title="Editar"
+                                    className="p-1.5 text-theme-text-muted hover:text-theme-accent hover:bg-theme-accent/10 rounded-lg transition-all"
                                   >
-                                    <Edit2 size={18} />
+                                    <Edit2 size={16} />
                                   </button>
                                   <button
                                     onClick={() => deleteProduct(p.id)}
-                                    className="p-2 text-theme-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                    title="Excluir"
+                                    className="p-1.5 text-theme-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                                   >
-                                    <Trash2 size={18} />
+                                    <Trash2 size={16} />
                                   </button>
                                 </div>
                               </td>

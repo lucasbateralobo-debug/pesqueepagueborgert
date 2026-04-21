@@ -12,9 +12,14 @@ export type ActionLog = {
 
 export const logAction = async (payload: ActionLog) => {
   try {
+    // Clean up empty strings that might cause UUID validation errors in Supabase/Postgres
+    const cleanPayload: any = { ...payload };
+    if (!cleanPayload.user_id) delete cleanPayload.user_id;
+    if (!cleanPayload.target_id) delete cleanPayload.target_id;
+
     const { error } = await supabase
       .from('action_logs')
-      .insert([payload]);
+      .insert([cleanPayload]);
     
     if (error) {
       console.warn('Logging error (maybe table not created?):', error.message);

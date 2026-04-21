@@ -126,6 +126,14 @@ app.delete('/api/products/:id', async (req, res) => {
   res.status(204).end();
 });
 
+app.post('/api/products-bulk-delete', async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'IDs array required' });
+  const { error } = await supabase.from('products').delete().in('id', ids);
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).end();
+});
+
 // ============================================
 // API Routes - Settings
 // ============================================
