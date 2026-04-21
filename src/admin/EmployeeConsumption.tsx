@@ -501,6 +501,7 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
                 onChange={(e) => setFilterDate(e.target.value)}
                 className="bg-theme-card border border-theme-border rounded-xl px-4 py-3 text-sm text-theme-text focus:outline-none focus:border-theme-accent transition-all"
               />
+            </div>
             {/* Consumption List */}
             <div className="bg-theme-card rounded-3xl border border-theme-border shadow-sm overflow-hidden">
               {filteredConsumptions.length === 0 ? (
@@ -626,7 +627,6 @@ export default function EmployeeConsumption({ userRole, userName }: EmployeeCons
                   </div>
                 </React.Fragment>
               )}
-            </div>  )}
             </div>
           </motion.div>
         )}
