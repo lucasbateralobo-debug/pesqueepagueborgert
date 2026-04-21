@@ -158,6 +158,28 @@ export default function StockControl({
 
   useEffect(() => {
     fetchData();
+
+    // Subscribe to Realtime changes for instant updates
+    const channel = supabase
+      .channel("stock_realtime_" + currentWeek)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "stock_entries",
+          filter: `week_start=eq.${currentWeek}`,
+        },
+        () => {
+          // Re-fetch when something changes in this week's stock
+          fetchData();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [currentWeek]);
 
   const stockMap = useMemo(() => {
