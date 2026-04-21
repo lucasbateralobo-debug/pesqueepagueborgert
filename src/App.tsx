@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search, MessageSquare, Info, Moon, Sun, Calendar, Users, ShoppingBag, Settings, Gift, Cake, Music, ChevronRight } from 'lucide-react';
+import { Fish, Waves, ShoppingCart, X, Plus, Minus, UtensilsCrossed, Wine, Image as ImageIcon, Check, Star, Search, MessageSquare, Info, Moon, Sun, Calendar, Users, ShoppingBag, Settings, Gift, Cake, Music, ChevronRight, History, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 
@@ -604,6 +604,33 @@ export default function App() {
   });
   const [isBirthdayOpen, setIsBirthdayOpen] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [localOrderHistory, setLocalOrderHistory] = useState<any>(null);
+
+  useEffect(() => {
+    const checkHistory = () => {
+      const saved = localStorage.getItem('borgert_order_history');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          const now = Date.now();
+          const limit = 4.5 * 60 * 60 * 1000; // 4.5 hours in ms
+          if (now - parsed.timestamp < limit) {
+            setLocalOrderHistory(parsed);
+          } else {
+            localStorage.removeItem('borgert_order_history');
+            setLocalOrderHistory(null);
+          }
+        } catch (e) {
+          console.error("History parse error", e);
+        }
+      }
+    };
+    
+    checkHistory();
+    const interval = setInterval(checkHistory, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
   const [activeCategory, setActiveCategory] = useState<MainCategory>('comidas');
   const [activeSubcategory, setActiveSubcategory] = useState<string>('');
   const [cartPulse, setCartPulse] = useState(false);
@@ -1110,6 +1137,49 @@ export default function App() {
           </div>
         </motion.div>
       </header>
+
+      {/* RECENT ORDER HISTORY (4.5h) */}
+      <AnimatePresence>
+        {localOrderHistory && (
+          <motion.section
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="px-4 md:px-12 mb-6"
+          >
+            <div className="max-w-5xl mx-auto bg-theme-card border border-theme-accent/30 rounded-[2rem] p-5 shadow-lg relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Clock size={80} className="text-theme-accent" />
+              </div>
+              
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-theme-accent text-white flex items-center justify-center shadow-md">
+                    <History size={16} />
+                  </div>
+                  <h3 className="font-bold text-theme-text text-sm uppercase tracking-widest italic">Meu Pedido Recente</h3>
+                </div>
+                <span className="text-[10px] font-bold text-theme-text-muted bg-theme-bg px-2 py-1 rounded-lg border border-theme-border">
+                  Expira em {Math.ceil((4.5 * 60 * 60 * 1000 - (Date.now() - localOrderHistory.timestamp)) / 60000)} min
+                </span>
+              </div>
+
+              <div className="space-y-2 relative z-10">
+                {localOrderHistory.items.map((item: any, idx: number) => (
+                  <div key={idx} className="flex justify-between items-center text-sm">
+                    <span className="text-theme-text font-black truncate max-w-[70%]">{item.quantidade}x {item.nome}</span>
+                    <span className="text-theme-text-muted font-serif">{formatCurrency(item.preco * item.quantidade)}</span>
+                  </div>
+                ))}
+                <div className="border-t border-theme-border/50 pt-3 mt-3 flex justify-between items-center">
+                  <span className="text-xs font-black text-theme-text uppercase opacity-60">Total do Pedido</span>
+                  <span className="text-xl font-serif font-black text-theme-accent">{formatCurrency(localOrderHistory.total)}</span>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* Featured / Promotions Section */}
       {featuredProducts.length > 0 && !searchQuery.trim() && (
@@ -1898,7 +1968,30 @@ export default function App() {
               <span className="text-3xl font-serif text-theme-accent font-bold leading-none">{formatCurrency(subtotal)}</span>
             </div>
              <button 
-              onClick={() => {
+              onClick={async () => {
+                // 1. Deduct Stock
+                try {
+                  await fetch('/api/stock/deduct', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      items: cart.map(item => ({ product_id: item.id, quantity: item.quantidade })),
+                      source: 'Pedido Cliente'
+                    })
+                  });
+                } catch (err) {
+                  console.error('Stock deduction error:', err);
+                }
+
+                // 2. Save to History (4.5h)
+                const historyData = {
+                  items: [...cart],
+                  total: subtotal,
+                  timestamp: Date.now()
+                };
+                localStorage.setItem('borgert_order_history', JSON.stringify(historyData));
+                setLocalOrderHistory(historyData);
+
                 setIsCartOpen(false);
                 setIsOrderSummaryOpen(true);
               }}
@@ -1983,21 +2076,7 @@ export default function App() {
                   </div>
                   
                   <button
-                    onClick={async () => {
-                      // Deduct Stock
-                      try {
-                        await fetch('/api/stock/deduct', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            items: cart.map(item => ({ product_id: item.id, quantity: item.quantidade })),
-                            source: 'Pedido Cliente'
-                          })
-                        });
-                      } catch (err) {
-                        console.error('Stock deduction error:', err);
-                      }
-
+                    onClick={() => {
                       setCart([]);
                       localStorage.removeItem('borgert_cart');
                       setIsOrderSummaryOpen(false);
