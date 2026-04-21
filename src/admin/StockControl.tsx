@@ -8,6 +8,7 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   MinusCircle,
+  PlusCircle,
   Loader2,
   Search,
   Filter,
@@ -565,19 +566,36 @@ export default function StockControl({
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-text-muted"
-          size={20}
-        />
-        <input
-          type="text"
-          placeholder="Buscar produto..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-theme-card border border-theme-border rounded-2xl py-4 pl-12 pr-4 text-theme-text focus:outline-none focus:border-theme-accent transition-all shadow-sm"
-        />
+      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+        <div className="relative flex-1">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-text-muted"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Buscar produto..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-theme-card border border-theme-border rounded-2xl py-4 pl-12 pr-4 text-theme-text focus:outline-none focus:border-theme-accent transition-all shadow-sm"
+          />
+        </div>
+        {Object.keys(editingEntries).length > 0 && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={async () => {
+              const ids = Object.keys(editingEntries);
+              for (const id of ids) {
+                await saveEntry(id);
+              }
+            }}
+            className="bg-theme-accent text-white px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-theme-accent/20 hover:scale-[1.02] transition-all"
+          >
+            <Save size={20} />
+            Salvar Todas as Alterações ({Object.keys(editingEntries).length})
+          </motion.button>
+        )}
       </div>
 
       {/* Product List */}
@@ -688,26 +706,46 @@ export default function StockControl({
                   </div>
 
                   {/* Quantity */}
-                  <div className="md:w-1/6">
+                  <div className="md:w-1/4">
                     <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1 font-sans">
                       Qtd. em Estoque
                     </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={
-                        getEditValue(product.id, "quantity_estimate") ?? ""
-                      }
-                      onChange={(e) =>
-                        updateLocalEntry(
-                          product.id,
-                          "quantity_estimate",
-                          e.target.value ? parseInt(e.target.value) : null,
-                        )
-                      }
-                      placeholder="—"
-                      className="w-full bg-theme-bg/50 border border-theme-border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all placeholder:text-theme-text-muted/30"
-                    />
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          const current = getEditValue(product.id, "quantity_estimate") ?? entry?.quantity_estimate ?? 0;
+                          updateLocalEntry(product.id, "quantity_estimate", Math.max(0, Number(current) - 1));
+                        }}
+                        className="w-8 h-8 flex items-center justify-center bg-theme-bg border border-theme-border rounded-lg text-theme-text-muted hover:text-theme-accent hover:border-theme-accent transition-all"
+                      >
+                        <MinusCircle size={16} />
+                      </button>
+                      <input
+                        type="number"
+                        min={0}
+                        value={
+                          getEditValue(product.id, "quantity_estimate") ?? ""
+                        }
+                        onChange={(e) =>
+                          updateLocalEntry(
+                            product.id,
+                            "quantity_estimate",
+                            e.target.value ? parseInt(e.target.value) : null,
+                          )
+                        }
+                        placeholder="—"
+                        className="w-full bg-theme-bg/50 border border-theme-border rounded-xl px-3 py-2 text-[11px] font-bold text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent/20 transition-all placeholder:text-theme-text-muted/30 text-center"
+                      />
+                      <button
+                        onClick={() => {
+                          const current = getEditValue(product.id, "quantity_estimate") ?? entry?.quantity_estimate ?? 0;
+                          updateLocalEntry(product.id, "quantity_estimate", Number(current) + 1);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center bg-theme-bg border border-theme-border rounded-lg text-theme-text-muted hover:text-theme-accent hover:border-theme-accent transition-all"
+                      >
+                        <PlusCircle size={16} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Notes */}
