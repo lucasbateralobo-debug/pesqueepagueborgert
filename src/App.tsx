@@ -777,41 +777,7 @@ export default function App() {
     localStorage.setItem('borgert_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Shake Detection for Birthday
-  useEffect(() => {
-    let lastX = 0, lastY = 0, lastZ = 0;
-    let threshold = 15; // Sensitivity
-    let lastUpdate = 0;
 
-    const handleMotion = (event: DeviceMotionEvent) => {
-      const acceleration = event.accelerationIncludingGravity;
-      if (!acceleration) return;
-
-      const curTime = Date.now();
-      if ((curTime - lastUpdate) > 100) {
-        const diffTime = curTime - lastUpdate;
-        lastUpdate = curTime;
-
-        const { x, y, z } = acceleration;
-        const speed = Math.abs((x || 0) + (y || 0) + (z || 0) - lastX - lastY - lastZ) / diffTime * 10000;
-
-        if (speed > threshold) {
-          // SHAKEN!
-          setIsBirthdayOpen(true);
-        }
-
-        lastX = x || 0;
-        lastY = y || 0;
-        lastZ = z || 0;
-      }
-    };
-
-    if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', handleMotion);
-    }
-
-    return () => window.removeEventListener('devicemotion', handleMotion);
-  }, []);
 
   // Launch confetti when birthday opens
   useEffect(() => {
@@ -1126,10 +1092,7 @@ export default function App() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 flex flex-col items-center select-none cursor-pointer"
-          onClick={(e) => {
-            if (e.detail === 3) setIsBirthdayOpen(true);
-          }}
+          className="mb-8 flex flex-col items-center select-none pointer-events-none"
         >
           <div className="relative w-full max-w-[280px] md:max-w-[400px] flex items-center justify-center">
              {/* FEIXE DE LUZ DE FUNDO (Glow background for dark mode) */}
@@ -1554,9 +1517,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="pt-8 opacity-40 text-[10px] text-theme-text font-bold uppercase tracking-widest">
-                Aviso: Gire ou chacoalhe o aparelho para a mágica acontecer! 🪄
-              </div>
+
             </div>
           </motion.div>
         )}
